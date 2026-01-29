@@ -158,6 +158,39 @@ test("thalia joker has nil check for rarity before use as table key", () => {
 });
 
 // ============================================================================
+// items/tag.lua - Nil table key fix
+// ============================================================================
+
+const tagContent = readFile("items/tag.lua");
+
+test("epic tag has nil check for key before use as table key", () => {
+	// Should check config.center.key is not nil before using as table key
+	return (
+		tagContent.includes("v.config and v.config.center and v.config.center.key") ||
+		tagContent.includes("local epic_key = v.config and v.config.center and v.config.center.key")
+	);
+});
+
+// ============================================================================
+// items/epic.lua - Nil table key fixes
+// ============================================================================
+
+const epicContent = readFile("items/epic.lua");
+
+test("epic set_ability has nil check for rarity before use as table key", () => {
+	// Should check v.rarity is not nil before using as table key
+	return epicContent.includes("if v.rarity then");
+});
+
+test("epic banish has nil check for key before use as table key", () => {
+	// Should check card.config.center.key is not nil before using as table key
+	return (
+		epicContent.includes("card.config and card.config.center and card.config.center.key") ||
+		epicContent.includes("local banish_key = card.config and card.config.center and card.config.center.key")
+	);
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 

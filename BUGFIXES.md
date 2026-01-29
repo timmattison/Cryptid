@@ -4,8 +4,8 @@ This document describes the nil-access crash fixes, the test suite, and common p
 
 ## Summary
 
-- **14 bugs fixed** across 5 files
-- **80 tests written** (65 Lua + 15 TypeScript)
+- **17 bugs fixed** across 7 files
+- **85 tests written** (67 Lua + 18 TypeScript)
 - **2630 potential issues identified** by static analysis
 
 ## Bugs Fixed
@@ -53,20 +53,35 @@ Colours like `G.C.CRY_EXOTIC` were only populated in `Game:update()` but could b
 
 The `thalia` joker's `calc_xmult` function iterates through jokers and uses their rarity as a table key. If a joker has no rarity (nil), using nil as a table key causes "table index is nil" crash.
 
+### items/tag.lua - Nil Table Key (1 fix)
+
+| Bug | Fix |
+|-----|-----|
+| `epic` tag nil key as table key | Added nil checks for `v.config.center.key` before using as key |
+
+The epic tag iterates jokers and uses their key as a table key to track which epic jokers are in possession.
+
+### items/epic.lua - Nil Table Key (2 fixes)
+
+| Bug | Fix |
+|-----|-----|
+| `set_ability` nil rarity as table key | Added `if v.rarity then` check before using as key |
+| `banish` nil key as table key | Added nil checks for `card.config.center.key` before using as key |
+
 ## Test Suite
 
-### Lua Tests (65 tests)
+### Lua Tests (67 tests)
 
 Run with: `cd tests && lua run-all-tests.lua`
 
-#### test-nil-safety.lua (28 tests)
+#### test-nil-safety.lua (30 tests)
 Tests verifying the specific bug fixes work correctly:
 - Colour pre-initialization tests
 - G.shared_seals/G.shared_stickers nil check tests
 - table.remove nil check tests
 - cards[1] nil check tests
 - hook_config.colour nil check tests
-- Nil table key tests (thalia joker)
+- Nil table key tests (thalia, epic tag, epic set_ability, epic banish)
 - caeruleum array bounds check tests
 - center vs _center variable tests
 - percent variable definition tests
@@ -86,7 +101,7 @@ Tests documenting safe vs unsafe patterns:
 - Callback array index staleness
 - Missing return in functions
 
-### TypeScript Regression Tests (15 tests)
+### TypeScript Regression Tests (18 tests)
 
 Run with: `npx tsx scripts/test-bug-fixes.ts`
 

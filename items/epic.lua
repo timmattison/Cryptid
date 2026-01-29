@@ -1183,8 +1183,10 @@ local circus = {
 			return a.order < b.order
 		end)
 		for i, v in pairs(extra_rarities) do
-			mult_numbers[tostring(v.rarity) .. "_mult_mod"] = v.base_mult
-			mults[v.rarity] = tostring(v.rarity) .. "_mult_mod"
+			if v.rarity then
+				mult_numbers[tostring(v.rarity) .. "_mult_mod"] = v.base_mult
+				mults[v.rarity] = tostring(v.rarity) .. "_mult_mod"
+			end
 		end
 		if not self.config.extra then
 			self.config.extra = mult_numbers
@@ -2674,7 +2676,10 @@ local sundial = {
 		if context.selling_self and not context.retrigger_joker and not context.blueprint then
 			if card.ability.extra.handleft < 1 then
 				G.GAME.sundial = true
-				G.GAME.cry_banished_keys[card.config.center.key] = true
+				local banish_key = card.config and card.config.center and card.config.center.key
+				if banish_key then
+					G.GAME.cry_banished_keys[banish_key] = true
+				end
 				return { message = localize("k_active_ex") }
 			else
 				return { message = localize("k_nope_ex") }

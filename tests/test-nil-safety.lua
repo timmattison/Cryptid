@@ -382,6 +382,42 @@ T:test("table key: safe pattern skips nil keys", function()
 	T:assertEqual(1, seen[1], "Should have recorded rarity 1")
 end)
 
+T:test("table key: nil key from config.center.key crashes", function()
+	local rares_in_posession = {}
+	local cards = {
+		{ config = { center = { key = nil, rarity = "cry_epic" } } }, -- nil key
+	}
+
+	T:assertThrows(function()
+		for k, v in ipairs(cards) do
+			if v.config.center.rarity == "cry_epic" then
+				rares_in_posession[v.config.center.key] = true -- CRASH
+			end
+		end
+	end, "Using nil config.center.key as table key should crash")
+end)
+
+T:test("table key: safe pattern checks key before use", function()
+	local rares_in_posession = {}
+	local cards = {
+		{ config = { center = { key = "j_joker", rarity = "cry_epic" } } },
+		{ config = { center = { key = nil, rarity = "cry_epic" } } }, -- nil key
+		{ config = { center = { rarity = "cry_epic" } } }, -- missing key
+		{ config = { center = { key = "j_other", rarity = "common" } } }, -- wrong rarity
+	}
+
+	T:assertNoThrow(function()
+		for k, v in ipairs(cards) do
+			local dominated_key = v.config and v.config.center and v.config.center.key
+			if v.config.center.rarity == "cry_epic" and dominated_key and not rares_in_posession[dominated_key] then
+				rares_in_posession[dominated_key] = true
+			end
+		end
+	end, "Checking key before use should not crash")
+
+	T:assertEqual(true, rares_in_posession["j_joker"], "Should have recorded j_joker")
+end)
+
 -- ============================================================================
 -- ARGS.COLOUR NIL CHECK TEST (BalatroMultiplayer fix pattern)
 -- ============================================================================

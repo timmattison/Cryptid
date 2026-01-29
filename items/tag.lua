@@ -57,9 +57,10 @@ local epic_tag = {
 		if context.type == "store_joker_create" then
 			local rares_in_posession = { 0 }
 			for k, v in ipairs(G.jokers.cards) do
-				if v.config.center.rarity == "cry_epic" and not rares_in_posession[v.config.center.key] then
+				local epic_key = v.config and v.config.center and v.config.center.key
+				if v.config and v.config.center and v.config.center.rarity == "cry_epic" and epic_key and not rares_in_posession[epic_key] then
 					rares_in_posession[1] = rares_in_posession[1] + 1
-					rares_in_posession[v.config.center.key] = true
+					rares_in_posession[epic_key] = true
 				end
 			end
 			local card
