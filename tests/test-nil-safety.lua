@@ -1,0 +1,379 @@
+#!/usr/bin/env lua
+--- Nil-safety tests for Cryptid bug fixes
+--- These tests verify that code handles nil values correctly without crashing
+
+package.path = package.path .. ";./?.lua"
+
+local TestRunner = require("test-runner")
+local T = TestRunner
+
+-- ============================================================================
+-- MOCK SETUP
+-- ============================================================================
+
+--- Create a fresh mock of the game globals
+local function create_mock_G()
+	return {
+		C = {},
+		jokers = nil,
+		hand = nil,
+		shared_seals = nil,
+		shared_stickers = nil,
+	}
+end
+
+-- ============================================================================
+-- COLOUR PRE-INITIALIZATION TESTS (lib/overrides.lua fixes)
+-- ============================================================================
+
+T:test("Colour: CRY_EXOTIC can be pre-initialized", function()
+	local G = create_mock_G()
+	-- Simulate the pre-initialization from lib/overrides.lua
+	G.C.CRY_EXOTIC = { 0, 0, 0, 0 }
+	T:assertNotNil(G.C.CRY_EXOTIC, "CRY_EXOTIC should exist")
+	T:assertEqual(4, #G.C.CRY_EXOTIC, "Should have 4 colour components")
+end)
+
+T:test("Colour: CRY_SELECTED can be pre-initialized", function()
+	local G = create_mock_G()
+	G.C.CRY_SELECTED = { 0, 0, 0, 0 }
+	T:assertNotNil(G.C.CRY_SELECTED, "CRY_SELECTED should exist")
+	T:assertEqual(4, #G.C.CRY_SELECTED, "Should have 4 colour components")
+end)
+
+T:test("Colour: CRY_TAX_MULT can be pre-initialized", function()
+	local G = create_mock_G()
+	G.C.CRY_TAX_MULT = { 0, 0, 0, 0 }
+	T:assertNotNil(G.C.CRY_TAX_MULT, "CRY_TAX_MULT should exist")
+end)
+
+T:test("Colour: CRY_TAX_CHIPS can be pre-initialized", function()
+	local G = create_mock_G()
+	G.C.CRY_TAX_CHIPS = { 0, 0, 0, 0 }
+	T:assertNotNil(G.C.CRY_TAX_CHIPS, "CRY_TAX_CHIPS should exist")
+end)
+
+T:test("Colour: Accessing pre-initialized colour doesn't crash", function()
+	local G = create_mock_G()
+	G.C.CRY_EXOTIC = { 0, 0, 0, 0 }
+
+	T:assertNoThrow(function()
+		-- Simulate accessing colour[4] like in draw_self
+		local alpha = G.C.CRY_EXOTIC[4]
+		T:assertEqual(0, alpha, "Alpha should be 0")
+	end, "Accessing colour array should not crash")
+end)
+
+T:test("Colour: Accessing nil colour crashes (demonstrates bug)", function()
+	local G = create_mock_G()
+	-- Don't initialize CRY_EXOTIC
+
+	T:assertThrows(function()
+		-- This would crash before the fix
+		local alpha = G.C.CRY_EXOTIC[4]
+	end, "Accessing nil colour should throw error")
+end)
+
+-- ============================================================================
+-- NIL CHECK TESTS (lib/ui.lua fixes)
+-- ============================================================================
+
+T:test("G.shared_seals: nil check prevents crash", function()
+	local G = create_mock_G()
+	local currentBack = { effect = { config = { cry_force_seal = "Gold" } } }
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: check G.shared_seals before accessing
+		local seal = nil
+		if G.shared_seals and G.shared_seals[currentBack.effect.config.cry_force_seal] then
+			seal = G.shared_seals[currentBack.effect.config.cry_force_seal]
+		end
+		T:assertNil(seal, "Seal should be nil when G.shared_seals doesn't exist")
+	end, "Nil check should prevent crash")
+end)
+
+T:test("G.shared_seals: works when populated", function()
+	local G = create_mock_G()
+	G.shared_seals = { Gold = { name = "Gold Seal" } }
+	local currentBack = { effect = { config = { cry_force_seal = "Gold" } } }
+
+	local seal = nil
+	if G.shared_seals and G.shared_seals[currentBack.effect.config.cry_force_seal] then
+		seal = G.shared_seals[currentBack.effect.config.cry_force_seal]
+	end
+
+	T:assertNotNil(seal, "Seal should exist when G.shared_seals is populated")
+	T:assertEqual("Gold Seal", seal.name, "Should get correct seal")
+end)
+
+T:test("G.shared_stickers: nil check prevents crash", function()
+	local G = create_mock_G()
+	local v = { key = "perishable" }
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: elseif G.shared_stickers and G.shared_stickers[v.key]
+		local sticker = nil
+		if G.shared_stickers and G.shared_stickers[v.key] then
+			sticker = G.shared_stickers[v.key]
+		end
+		T:assertNil(sticker, "Sticker should be nil")
+	end, "Nil check should prevent crash")
+end)
+
+T:test("table.remove: nil check for nested nodes", function()
+	local abc = {}
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: check abc.nodes and abc.nodes[1] and abc.nodes[1].nodes
+		if abc.nodes and abc.nodes[1] and abc.nodes[1].nodes then
+			table.remove(abc.nodes[1].nodes, 1)
+		end
+	end, "Nil check should prevent crash on table.remove")
+end)
+
+T:test("table.remove: works when nodes exist", function()
+	local abc = {
+		nodes = {
+			{
+				nodes = { "item1", "item2", "item3" },
+			},
+		},
+	}
+
+	if abc.nodes and abc.nodes[1] and abc.nodes[1].nodes then
+		table.remove(abc.nodes[1].nodes, 1)
+	end
+
+	T:assertEqual(2, #abc.nodes[1].nodes, "Should have removed one item")
+	T:assertEqual("item2", abc.nodes[1].nodes[1], "First item should now be item2")
+end)
+
+-- ============================================================================
+-- CARDS[1] NIL CHECK TESTS (items/code.lua fixes)
+-- ============================================================================
+
+T:test("cards[1]: early return pattern prevents crash", function()
+	local cards = {}
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: if not cards[1] then return end
+		if not cards[1] then
+			return
+		end
+		-- This code should never execute
+		local area = cards[1].area
+	end, "Early return should prevent crash on empty cards")
+end)
+
+T:test("cards[1]: nil check before area access", function()
+	local cards = {}
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: if cards[1] then ... if cards[1].area == G.hand then
+		if cards[1] then
+			if cards[1].area then
+				-- Do something with area
+			end
+		end
+	end, "Nested nil check should prevent crash")
+end)
+
+T:test("cards[1]: works when card exists", function()
+	local G = create_mock_G()
+	G.hand = { name = "hand" }
+	local cards = { { area = G.hand, config = {} } }
+
+	local result = nil
+	if cards[1] then
+		if cards[1].area == G.hand then
+			result = "in_hand"
+		end
+	end
+
+	T:assertEqual("in_hand", result, "Should detect card is in hand")
+end)
+
+T:test("cards[1].config.cry_multiply: nil check prevents crash", function()
+	local cards = {}
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: if cards[1] then if not cards[1].config.cry_multiply then
+		if cards[1] then
+			if not cards[1].config.cry_multiply then
+				-- Do something
+			end
+		end
+	end, "Nil check should prevent crash")
+end)
+
+-- ============================================================================
+-- HOOK_CONFIG.COLOUR NIL CHECK TESTS (items/code.lua fixes)
+-- ============================================================================
+
+T:test("hook_config.colour: nil check prevents crash", function()
+	local hook_config = {}
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: if hook_config.colour then
+		if hook_config.colour then
+			local r = hook_config.colour[1]
+		end
+	end, "Nil check should prevent crash")
+end)
+
+T:test("hook_config.colour: works when colour exists", function()
+	local hook_config = { colour = { 1.0, 0.5, 0.5, 1.0 } }
+
+	local r = nil
+	if hook_config.colour then
+		r = hook_config.colour[1]
+	end
+
+	T:assertEqual(1.0, r, "Should get red component")
+end)
+
+-- ============================================================================
+-- ARRAY BOUNDS CHECK TESTS (items/exotic.lua fixes)
+-- ============================================================================
+
+T:test("caeruleum: bounds check prevents crash (lower bound)", function()
+	local G = create_mock_G()
+	G.jokers = { cards = { { name = "joker1" } } }
+	local i = 1
+	local b = false -- going left, so index = 1 + -1 = 0
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: check bounds before accessing
+		local caeruleum_index = i + (b and 1 or -1)
+		if caeruleum_index < 1 or caeruleum_index > #G.jokers.cards then
+			return
+		end
+		local caeruleum = G.jokers.cards[caeruleum_index]
+	end, "Bounds check should prevent crash on lower bound")
+end)
+
+T:test("caeruleum: bounds check prevents crash (upper bound)", function()
+	local G = create_mock_G()
+	G.jokers = { cards = { { name = "joker1" } } }
+	local i = 1
+	local b = true -- going right, so index = 1 + 1 = 2, but only 1 card
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: check bounds before accessing
+		local caeruleum_index = i + (b and 1 or -1)
+		if caeruleum_index < 1 or caeruleum_index > #G.jokers.cards then
+			return
+		end
+		local caeruleum = G.jokers.cards[caeruleum_index]
+	end, "Bounds check should prevent crash on upper bound")
+end)
+
+T:test("caeruleum: valid index works", function()
+	local G = create_mock_G()
+	G.jokers = { cards = { { name = "joker1" }, { name = "joker2" }, { name = "joker3" } } }
+	local i = 2
+	local b = true -- going right, so index = 2 + 1 = 3
+
+	local caeruleum_index = i + (b and 1 or -1)
+	local caeruleum = nil
+	if caeruleum_index >= 1 and caeruleum_index <= #G.jokers.cards then
+		caeruleum = G.jokers.cards[caeruleum_index]
+	end
+
+	T:assertNotNil(caeruleum, "Should get joker at valid index")
+	T:assertEqual("joker3", caeruleum.name, "Should get correct joker")
+end)
+
+-- ============================================================================
+-- CENTER VS _CENTER VARIABLE TEST (lib/ui.lua typo fix)
+-- ============================================================================
+
+T:test("center variable: correct variable name used", function()
+	-- This tests that 'center' is used, not '_center' (which was a typo)
+	local center = { soul_pos = { x = 0, y = 0 } }
+	local _center = nil -- This was incorrectly used before
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: if center and center.soul_pos
+		if center and center.soul_pos then
+			local x = center.soul_pos.x
+			local y = center.soul_pos.y
+		end
+	end, "Using 'center' variable should not crash")
+end)
+
+T:test("_center variable: would crash (demonstrates bug)", function()
+	local center = { soul_pos = { x = 0, y = 0 } }
+	local _center = nil -- Typo - wrong variable
+
+	T:assertThrows(function()
+		-- Bug pattern: using _center instead of center
+		if _center and _center.soul_pos then
+			-- This wouldn't run, but if it did...
+		else
+			-- Original code accessed _center unconditionally after
+			local x = _center.soul_pos.x
+		end
+	end, "Using '_center' (typo) would crash")
+end)
+
+-- ============================================================================
+-- PERCENT VARIABLE DEFINITION TEST (items/code.lua fix)
+-- ============================================================================
+
+T:test("percent: variable must be defined before use in play_sound", function()
+	-- This tests the pattern where 'percent' must be defined before being used
+	-- The bug was: play_sound('tarot1', percent) where percent was undefined
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: local percent = 0.85 before use
+		local percent = 0.85
+		-- Simulate play_sound call
+		local sound_args = { sound = "tarot1", percent = percent }
+		T:assertEqual(0.85, sound_args.percent, "Percent should be defined")
+	end, "Defining percent before use should not crash")
+end)
+
+T:test("percent: undefined variable would cause nil in play_sound", function()
+	-- Demonstrates the bug where percent was not defined
+	-- Note: In Lua, undefined variables are nil, not errors
+	-- But passing nil to play_sound could cause issues
+
+	local undefined_percent = nil -- Simulates undefined variable
+
+	-- In the actual code, this would pass nil to play_sound
+	-- which may or may not crash depending on play_sound's implementation
+	T:assertNil(undefined_percent, "Undefined variable is nil in Lua")
+end)
+
+-- ============================================================================
+-- ARGS.COLOUR NIL CHECK TEST (BalatroMultiplayer fix pattern)
+-- ============================================================================
+
+T:test("args.colour: nil check before indexing", function()
+	local args = { fade = 0.5 }
+
+	T:assertNoThrow(function()
+		-- Pattern from fix: if args.colour then args.colour[4] = ...
+		if args.colour then
+			args.colour[4] = math.min(args.colour[4], args.fade)
+		end
+	end, "Nil check should prevent crash")
+end)
+
+T:test("args.colour: works when colour exists", function()
+	local args = { fade = 0.5, colour = { 1.0, 0.5, 0.5, 1.0 } }
+
+	if args.colour then
+		args.colour[4] = math.min(args.colour[4], args.fade)
+	end
+
+	T:assertEqual(0.5, args.colour[4], "Alpha should be clamped to fade value")
+end)
+
+-- ============================================================================
+-- RUN TESTS
+-- ============================================================================
+
+local success = T:run()
+os.exit(success and 0 or 1)

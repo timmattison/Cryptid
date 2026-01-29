@@ -1699,7 +1699,11 @@ local caeruleum = {
 				for i = 1, #G.jokers.cards do
 					if G.jokers.cards[i] == card then
 						for _, b in ipairs(card.ability.cry_caeruleum) do
-							local caeruleum = G.jokers.cards[i + (b and 1 or -1)]
+							local caeruleum_index = i + (b and 1 or -1)
+							if caeruleum_index < 1 or caeruleum_index > #G.jokers.cards then
+								break
+							end
+							local caeruleum = G.jokers.cards[caeruleum_index]
 							local was_key_changed, new_key, op = Cryptid.caeruleum_new_key(key)
 
 							-- change the key!

@@ -1963,15 +1963,15 @@ local seed = {
 			if cards[1].config.center.key == "j_cry_googol_play" then
 				check_for_unlock({ type = "googol_play_rigged" })
 			end
-		end
-		if cards[1].area == G.hand then
-			G.E_MANAGER:add_event(Event({
-				trigger = "after",
-				func = function()
-					G.hand:unhighlight_all()
-					return true
-				end,
-			}))
+			if cards[1].area == G.hand then
+				G.E_MANAGER:add_event(Event({
+					trigger = "after",
+					func = function()
+						G.hand:unhighlight_all()
+						return true
+					end,
+				}))
+			end
 		end
 	end,
 	demicoloncompat = true,
@@ -2090,6 +2090,7 @@ local patch = {
 		delay(0.2)
 		for i = 1, #G.hand.cards do
 			local CARD = G.hand.cards[i]
+			local percent = 0.85 + (i - 0.999) / (#G.hand.cards - 0.998) * 0.3
 			G.E_MANAGER:add_event(Event({
 				trigger = "after",
 				delay = 0.15,
@@ -2107,6 +2108,7 @@ local patch = {
 		end
 		for i = 1, #G.jokers.cards do
 			local CARD = G.jokers.cards[i]
+			local percent = 0.85 + (i - 0.999) / (#G.jokers.cards - 0.998) * 0.3
 			G.E_MANAGER:add_event(Event({
 				trigger = "after",
 				delay = 0.15,
@@ -2123,6 +2125,7 @@ local patch = {
 		end
 		for i = 1, #G.consumeables.cards do
 			local CARD = G.consumeables.cards[i]
+			local percent = 0.85 + (i - 0.999) / (#G.consumeables.cards - 0.998) * 0.3
 			G.E_MANAGER:add_event(Event({
 				trigger = "after",
 				delay = 0.15,
@@ -2511,6 +2514,7 @@ local inst = {
 	use = function(self, card, area, copier)
 		local same = 0
 		local cards = Cryptid.get_highlighted_cards({ G.hand }, card, 1, 1)
+		if not cards[1] then return end
 		for i = 1, #G.deck.cards do
 			if G.deck.cards[i].base.value == cards[1].base.value then
 				same = i
@@ -2529,6 +2533,7 @@ local inst = {
 		for j = 1, number do
 			local same = 0
 			local cards = Cryptid.get_highlighted_cards({ G.hand }, card, 1, 1)
+			if not cards[1] then return end
 			for i = 1, #G.deck.cards do
 				if G.deck.cards[i].base.value == cards[1].base.value then
 					same = i
@@ -4180,11 +4185,13 @@ local multiply = {
 		local cards = Cryptid.get_highlighted_cards({ G.jokers }, card, 1, 1, function(card)
 			return not Card.no(card, "immutable", true)
 		end)
-		if cards[1] and not cards[1].config.cry_multiply then
-			cards[1].config.cry_multiply = 1
+		if cards[1] then
+			if not cards[1].config.cry_multiply then
+				cards[1].config.cry_multiply = 1
+			end
+			cards[1].config.cry_multiply = cards[1].config.cry_multiply * 2
+			Cryptid.manipulate(cards[1], { value = 2 })
 		end
-		cards[1].config.cry_multiply = cards[1].config.cry_multiply * 2
-		Cryptid.manipulate(cards[1], { value = 2 })
 	end,
 	init = function(self)
 		--reset Jokers at end of round
@@ -5571,12 +5578,14 @@ return {
 				if hook.config.ref_table.callback then
 					hook.config.ref_table.callback()
 				end
-				hook.parent.parent.config.colour = hook_config.colour
-				local temp_colour = copy_table(hook_config.orig_colour)
-				hook_config.colour[1] = G.C.WHITE[1]
-				hook_config.colour[2] = G.C.WHITE[2]
-				hook_config.colour[3] = G.C.WHITE[3]
-				ease_colour(hook_config.colour, temp_colour)
+				if hook_config.colour then
+					hook.parent.parent.config.colour = hook_config.colour
+					local temp_colour = copy_table(hook_config.orig_colour)
+					hook_config.colour[1] = G.C.WHITE[1]
+					hook_config.colour[2] = G.C.WHITE[2]
+					hook_config.colour[3] = G.C.WHITE[3]
+					ease_colour(hook_config.colour, temp_colour)
+				end
 				G.CONTROLLER.text_input_hook = nil
 			elseif args.key == "LEFT" then --Move cursor position to the left
 				TRANSPOSE_TEXT_INPUT(-1)

@@ -18,6 +18,8 @@ SMODS.DrawStep({
 				currentBack.effect.config.cry_force_seal
 				and not currentBack.effect.config.hide_seal
 				and not currentBack.effect.config.cry_antimatter
+				and G.shared_seals
+				and G.shared_seals[currentBack.effect.config.cry_force_seal]
 			then
 				G.shared_seals[currentBack.effect.config.cry_force_seal]:draw_shader(
 					"dissolve",
@@ -41,7 +43,7 @@ SMODS.DrawStep({
 					if currentBack.effect.config.cry_force_sticker == v.key then
 						if v and v.draw and type(v.draw) == "function" then
 							v:draw(self)
-						else
+						elseif G.shared_stickers and G.shared_stickers[v.key] then
 							G.shared_stickers[v.key].role.draw_major = self
 							G.shared_stickers[v.key]:draw_shader("dissolve", nil, nil, true, self.children.center)
 							G.shared_stickers[v.key]:draw_shader(
@@ -75,7 +77,7 @@ SMODS.DrawStep({
 						self.children.center:draw_shader("negative_shine", nil, self.ARGS.send_to_shader, true)
 					end
 				end
-				if currentBack.effect.center.edeck_type == "seal" then
+				if currentBack.effect.center.edeck_type == "seal" and G.shared_seals and G.shared_seals[seal] then
 					G.shared_seals[seal]:draw_shader("dissolve", nil, nil, true, self.children.center)
 					if seal == "Gold" then
 						G.shared_seals[seal]:draw_shader(
@@ -92,7 +94,7 @@ SMODS.DrawStep({
 						if sticker == v.key then
 							if v and v.draw and type(v.draw) == "function" then
 								v:draw(self)
-							else
+							elseif G.shared_stickers and G.shared_stickers[v.key] then
 								G.shared_stickers[v.key].role.draw_major = self
 								G.shared_stickers[v.key]:draw_shader("dissolve", nil, nil, true, self.children.center)
 								G.shared_stickers[v.key]:draw_shader(
@@ -208,14 +210,14 @@ SMODS.DrawStep({
 				)
 			else
 				local center = self.config.center
-				if _center and _center.soul_pos and _center.soul_pos.extra then
+				if center and center.soul_pos and center.soul_pos.extra then
 					self.children.floating_sprite2 = Sprite(
 						self.T.x,
 						self.T.y,
 						self.T.w,
 						self.T.h,
-						G.ASSET_ATLAS[_center.atlas or _center.set],
-						_center.soul_pos.extra
+						G.ASSET_ATLAS[center.atlas or center.set],
+						center.soul_pos.extra
 					)
 					self.children.floating_sprite2.role.draw_major = self
 					self.children.floating_sprite2.states.hover.can = false
@@ -329,10 +331,20 @@ function G.UIDEF.use_and_sell_buttons(card)
 		and card.config.center
 		and card.config.center.rarity == "cry_cursed"
 		and card.ability.name ~= "cry-Monopoly"
+		and abc.nodes
+		and abc.nodes[1]
+		and abc.nodes[1].nodes
 	then
 		table.remove(abc.nodes[1].nodes, 1)
 	end
-	if card.config and card.config.center and card.config.center.key == "c_cry_potion" then
+	if
+		card.config
+		and card.config.center
+		and card.config.center.key == "c_cry_potion"
+		and abc.nodes
+		and abc.nodes[1]
+		and abc.nodes[1].nodes
+	then
 		table.remove(abc.nodes[1].nodes, 1)
 	end
 	-- i love buttercup
