@@ -4,8 +4,8 @@ This document describes the nil-access crash fixes, the test suite, and common p
 
 ## Summary
 
-- **13 bugs fixed** across 4 files
-- **77 tests written** (63 Lua + 14 TypeScript)
+- **14 bugs fixed** across 5 files
+- **80 tests written** (65 Lua + 15 TypeScript)
 - **2630 potential issues identified** by static analysis
 
 ## Bugs Fixed
@@ -45,19 +45,28 @@ Colours like `G.C.CRY_EXOTIC` were only populated in `Game:update()` but could b
 |-----|-----|
 | `caeruleum` out-of-bounds | Added bounds check before accessing `G.jokers.cards[caeruleum_index]` |
 
+### items/misc_joker.lua - Nil Table Key (1 fix)
+
+| Bug | Fix |
+|-----|-----|
+| `thalia` nil rarity as table key | Added nil checks for `c.config.center.rarity` before using as key |
+
+The `thalia` joker's `calc_xmult` function iterates through jokers and uses their rarity as a table key. If a joker has no rarity (nil), using nil as a table key causes "table index is nil" crash.
+
 ## Test Suite
 
-### Lua Tests (63 tests)
+### Lua Tests (65 tests)
 
 Run with: `cd tests && lua run-all-tests.lua`
 
-#### test-nil-safety.lua (26 tests)
+#### test-nil-safety.lua (28 tests)
 Tests verifying the specific bug fixes work correctly:
 - Colour pre-initialization tests
 - G.shared_seals/G.shared_stickers nil check tests
 - table.remove nil check tests
 - cards[1] nil check tests
 - hook_config.colour nil check tests
+- Nil table key tests (thalia joker)
 - caeruleum array bounds check tests
 - center vs _center variable tests
 - percent variable definition tests
@@ -77,7 +86,7 @@ Tests documenting safe vs unsafe patterns:
 - Callback array index staleness
 - Missing return in functions
 
-### TypeScript Regression Tests (14 tests)
+### TypeScript Regression Tests (15 tests)
 
 Run with: `npx tsx scripts/test-bug-fixes.ts`
 

@@ -143,6 +143,21 @@ test("caeruleum has array bounds check", () => {
 });
 
 // ============================================================================
+// items/misc_joker.lua - Nil table key fix
+// ============================================================================
+
+const miscJokerContent = readFile("items/misc_joker.lua");
+
+test("thalia joker has nil check for rarity before use as table key", () => {
+	// Should check c.config and c.config.center before accessing rarity
+	// And check rarity is not nil before using as table key
+	return (
+		miscJokerContent.includes("c.config and c.config.center and c.config.center.rarity") &&
+		miscJokerContent.includes("if rarity and not seen[rarity]")
+	);
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 

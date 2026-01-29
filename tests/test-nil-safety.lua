@@ -347,6 +347,42 @@ T:test("percent: undefined variable would cause nil in play_sound", function()
 end)
 
 -- ============================================================================
+-- NIL TABLE KEY TEST (items/misc_joker.lua thalia fix)
+-- ============================================================================
+
+T:test("table key: nil key crashes", function()
+	local seen = {}
+
+	T:assertThrows(function()
+		-- Bug: using nil as table key
+		local rarity = nil
+		seen[rarity] = 1
+	end, "Using nil as table key should crash")
+end)
+
+T:test("table key: safe pattern skips nil keys", function()
+	local seen = {}
+	local cards = {
+		{ config = { center = { rarity = 1 } } },
+		{ config = { center = { rarity = nil } } }, -- nil rarity
+		{ config = { center = {} } }, -- missing rarity
+		{ config = {} }, -- missing center
+		{}, -- missing config
+	}
+
+	T:assertNoThrow(function()
+		for _, c in ipairs(cards) do
+			local rarity = c.config and c.config.center and c.config.center.rarity
+			if rarity then
+				seen[rarity] = 1
+			end
+		end
+	end, "Checking rarity before use as key should not crash")
+
+	T:assertEqual(1, seen[1], "Should have recorded rarity 1")
+end)
+
+-- ============================================================================
 -- ARGS.COLOUR NIL CHECK TEST (BalatroMultiplayer fix pattern)
 -- ============================================================================
 
