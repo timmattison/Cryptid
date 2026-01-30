@@ -292,14 +292,10 @@ return {
 			b_cry_yoloecon = {
 				name = "YOLOEcon Deck",
 				text = {
-					"Start with {C:money}$#1#{}, earn {C:red}$0{}",
-					"from blinds or remaining hands",
-					"Interest cap is {C:money}$#2#{} {C:inactive}(doubled){}",
-					"{C:attention}Joker{} costs: {C:blue}Common{} {C:money}$#3#{},",
-					"{C:green}Uncommon{} {C:money}$#4#{}, {C:red}Rare{} {C:money}$#5#{},",
-					"{C:legendary}Legendary{} {C:money}$#6#{}",
-					"{C:dark_edition}Editions{} add {C:money}$#7#{}",
-					"Rerolls always cost {C:money}$#8#{}",
+					"Start with {C:money}$#1#{}, {C:red}no round income{}",
+					"Interest cap {C:money}$#2#{}, rerolls {C:money}$#8#{}",
+					"{C:attention}Jokers{}: {C:money}$#3#{}/$#4#/$#5#/$#6#{} {C:inactive}(C/U/R/L){}",
+					"{C:dark_edition}Editions{} {C:money}+$#7#{}",
 				},
 			},
 		},
