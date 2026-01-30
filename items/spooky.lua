@@ -240,6 +240,10 @@ local choco3 = {
 	end,
 	finish = function(self)
 		--Reverse all potion effects
+		-- Safety check: ensure event data exists before accessing
+		if not G.GAME.events[self.key] then
+			return
+		end
 		if G.GAME.events[self.key].potions and G.GAME.events[self.key].potions[2] then
 			G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling
 				/ (1.15 ^ G.GAME.events[self.key].potions[2])
@@ -261,6 +265,10 @@ local choco3 = {
 			and not context.blueprint
 			and not context.retrigger_joker
 		then
+			-- Safety check: ensure event data exists
+			if not G.GAME.events[self.key] or not G.GAME.events[self.key].potions then
+				return
+			end
 			--Detect if a potion has been used
 			local used_potion = false
 			for i = 1, num_potions do

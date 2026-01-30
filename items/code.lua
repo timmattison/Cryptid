@@ -1474,7 +1474,8 @@ local merge = {
 					CARD:flip()
 					c:flip()
 					delay(0.2)
-					local percent = 0.85 + (1 - 0.999) / (#G.hand.highlighted - 0.998) * 0.3
+					local highlighted_count = math.max(1, #G.hand.highlighted) -- Prevent division issues
+					local percent = 0.85 + (1 - 0.999) / (highlighted_count - 0.998) * 0.3
 					G.E_MANAGER:add_event(Event({
 						trigger = "after",
 						delay = 0.2,

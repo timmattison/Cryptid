@@ -1362,14 +1362,16 @@ function create_UIBox_your_collection_content_sets()
 		return a.cry_order < b.cry_order
 	end)
 	local joker_options = {}
-	for i = 1, math.ceil(#joker_pool / (5 * #G.your_collection)) do
+	local collection_size = G.your_collection and #G.your_collection or 1
+	if collection_size < 1 then collection_size = 1 end -- Prevent division by zero
+	for i = 1, math.ceil(#joker_pool / (5 * collection_size)) do
 		table.insert(
 			joker_options,
 			localize("k_page")
 				.. " "
 				.. tostring(i)
 				.. "/"
-				.. tostring(math.ceil(#joker_pool / (5 * #G.your_collection)))
+				.. tostring(math.ceil(#joker_pool / (5 * collection_size)))
 		)
 	end
 
@@ -1452,14 +1454,16 @@ function create_UIBox_your_collection_current_set()
 		return (a.cry_order or a.order or pseudorandom(a.key)) < (b.cry_order or b.order or pseudorandom(b.key))
 	end)
 	local joker_options = {}
-	for i = 1, math.ceil(#joker_pool / (5 * #G.your_collection)) do
+	local collection_size = G.your_collection and #G.your_collection or 1
+	if collection_size < 1 then collection_size = 1 end -- Prevent division by zero
+	for i = 1, math.ceil(#joker_pool / (5 * collection_size)) do
 		table.insert(
 			joker_options,
 			localize("k_page")
 				.. " "
 				.. tostring(i)
 				.. "/"
-				.. tostring(math.ceil(#joker_pool / (5 * #G.your_collection)))
+				.. tostring(math.ceil(#joker_pool / (5 * collection_size)))
 		)
 	end
 
