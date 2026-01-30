@@ -12,23 +12,23 @@ target = "game.lua"
 pattern = '''if G.load_shop_booster then'''
 position = "before"
 payload = '''
-if G.GAME.modifiers.cry_is_this_a_joke then
-    -- 4x odds means ~1/80 base chance per shop slot becomes ~1/20
+if G.GAME.modifiers.cry_is_this_a_joke and G.shop_jokers then
     -- Check for each shop joker slot if we should spawn a legendary or exotic
-    local slots = G.GAME.shop.joker_max or 2
+    -- 2% chance (1/50) per slot for legendary, 2% for exotic
+    local slots = (G.GAME.shop and G.GAME.shop.joker_max) or 2
     for i = 1, slots do
         local roll = pseudorandom('cry_itaj_legendary' .. G.GAME.round_resets.ante .. '_' .. i)
-        -- Legendary: base ~1/1000 in vanilla soul, we make it ~1/250 (4x)
-        -- For shop appearance, let's use 1/50 chance per slot
-        if roll < 0.02 then -- 2% = 1/50 chance
-            local card = create_card('Joker', G.shop_jokers, true, 4, nil, nil, nil, 'cry_itaj')
+        if roll < 0.02 then
+            -- Spawn legendary joker (2% = 1/50 chance per slot)
+            local card = create_card('Joker', G.jokers, true, nil, nil, nil, nil, 'cry_itaj')
             Cryptid.manipulate(card)
             create_shop_card_ui(card, 'Joker', G.shop_jokers)
             card:start_materialize()
             G.shop_jokers.config.card_limit = G.shop_jokers.config.card_limit + 1
             G.shop_jokers:emplace(card)
-        elseif roll < 0.04 and Cryptid.enabled('set_cry_exotic') then -- 2% = 1/50 chance for exotic
-            local card = create_card('Joker', G.shop_jokers, nil, 'cry_exotic', nil, nil, nil, 'cry_itaj')
+        elseif roll < 0.04 and Cryptid.enabled('set_cry_exotic') then
+            -- Spawn exotic joker (2% = 1/50 chance per slot, if exotic enabled)
+            local card = create_card('Joker', G.jokers, nil, 'cry_exotic', nil, nil, nil, 'cry_itaj')
             Cryptid.manipulate(card)
             create_shop_card_ui(card, 'Joker', G.shop_jokers)
             card:start_materialize()

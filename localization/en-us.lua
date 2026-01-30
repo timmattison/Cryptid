@@ -295,7 +295,7 @@ return {
 					"{C:attention}Common{} Jokers appear",
 					"but cannot be obtained",
 					"{C:legendary}Legendary{} and {C:cry_exotic}Exotic{}",
-					"Jokers can appear in shops",
+					"Jokers may appear as bonus shop items",
 					"Start with {C:voucher}Hone{}",
 				},
 			},

@@ -1186,7 +1186,7 @@ local is_this_a_joke = {
 	dependencies = {
 		items = {
 			"set_cry_deck",
-			"set_cry_epic",
+			"set_cry_exotic",
 		},
 	},
 	name = "cry-Is this a joke?",
