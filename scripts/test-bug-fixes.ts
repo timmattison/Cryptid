@@ -264,6 +264,33 @@ test("get_random_hand has max iterations to prevent infinite loop", () => {
 });
 
 // ============================================================================
+// lib/overrides.lua - YOLOEcon Deck tests
+// ============================================================================
+
+test("YOLOEcon reroll check comes after free_rerolls check", () => {
+	// Free rerolls from jokers/tags should take priority over YOLOEcon fixed pricing
+	// The free_rerolls check should come BEFORE the cry_yoloecon check
+	const freeRerollsIndex = overridesContent.indexOf("free_rerolls > 0");
+	const yoloeconRerollIndex = overridesContent.indexOf('if G.GAME.modifiers.cry_yoloecon then\n\t\tG.GAME.current_round.reroll_cost = 1');
+	return freeRerollsIndex !== -1 && yoloeconRerollIndex !== -1 && freeRerollsIndex < yoloeconRerollIndex;
+});
+
+test("YOLOEcon Joker pricing has nil safety for rarity access", () => {
+	// Should have: self.config and self.config.center and self.config.center.rarity
+	return overridesContent.includes("self.config and self.config.center and self.config.center.rarity");
+});
+
+test("YOLOEcon Joker pricing handles cry_epic rarity", () => {
+	// Should handle cry_epic as Rare-tier pricing ($3)
+	return overridesContent.includes('rarity == "cry_epic"');
+});
+
+test("YOLOEcon Joker pricing documents intentional behavior for special rarities", () => {
+	// Should have a comment explaining that cry_candy and cry_cursed use base price
+	return overridesContent.includes("cry_candy") && overridesContent.includes("cry_cursed") && overridesContent.includes("intentionally");
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 

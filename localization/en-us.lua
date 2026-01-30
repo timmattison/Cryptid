@@ -289,6 +289,15 @@ return {
 					"at the same time",
 				},
 			},
+			b_cry_yoloecon = {
+				name = "YOLOEcon Deck",
+				text = {
+					"Start with {C:money}$#1#{}, {C:red}no round income{}",
+					"Interest cap {C:money}$#2#{}, rerolls {C:money}$#8#{}",
+					"{C:attention}Jokers{}: {C:money}$#3#{}/$#4#/$#5#/$#6#{} {C:inactive}(C/U/R/L){}",
+					"{C:dark_edition}Editions{} {C:money}+$#7#{}",
+				},
+			},
 		},
 		Blind = {
 			bl_cry_box = {
