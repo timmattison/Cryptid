@@ -2319,3 +2319,27 @@ local smods_shatters_ref = SMODS.shatters
 function SMODS.shatters(card)
 	return card.cry_glass_trigger or smods_shatters_ref(card)
 end
+
+-- Fix for fractional hands/discards causing rounds to never end
+-- If hands_left or discards_left is less than 1 but greater than 0, set to 0
+local ease_hands_played_ref = ease_hands_played
+function ease_hands_played(mod, instant)
+	ease_hands_played_ref(mod, instant)
+	-- After the change, if hands_left is fractional (0 < x < 1), set to 0
+	if G.GAME and G.GAME.current_round and G.GAME.current_round.hands_left then
+		if G.GAME.current_round.hands_left > 0 and G.GAME.current_round.hands_left < 1 then
+			G.GAME.current_round.hands_left = 0
+		end
+	end
+end
+
+local ease_discard_ref = ease_discard
+function ease_discard(mod, instant, silent)
+	ease_discard_ref(mod, instant, silent)
+	-- After the change, if discards_left is fractional (0 < x < 1), set to 0
+	if G.GAME and G.GAME.current_round and G.GAME.current_round.discards_left then
+		if G.GAME.current_round.discards_left > 0 and G.GAME.current_round.discards_left < 1 then
+			G.GAME.current_round.discards_left = 0
+		end
+	end
+end
