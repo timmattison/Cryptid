@@ -410,8 +410,19 @@ local trade = {
 			local _pool = get_current_pool("Voucher", nil, nil, nil, true)
 			local center = pseudorandom_element(_pool, pseudoseed("cry_trade_redeem"))
 			local it = 1
+			local max_tries = #_pool + 100
 			while center == "UNAVAILABLE" do
 				it = it + 1
+				if it > max_tries then
+					-- Safety exit: return first available or fallback
+					for _, v in ipairs(_pool) do
+						if v ~= "UNAVAILABLE" then
+							center = v
+							break
+						end
+					end
+					break
+				end
 				center = pseudorandom_element(_pool, pseudoseed("cry_trade_redeem_resample" .. it))
 			end
 			local card = create_card("Voucher", area, nil, nil, nil, nil, center)
@@ -481,8 +492,19 @@ local trade = {
 			local _pool = get_current_pool("Voucher", nil, nil, nil, true)
 			local center = pseudorandom_element(_pool, pseudoseed("cry_trade_redeem"))
 			local it = 1
+			local max_tries = #_pool + 100
 			while center == "UNAVAILABLE" do
 				it = it + 1
+				if it > max_tries then
+					-- Safety exit: return first available or fallback
+					for _, v in ipairs(_pool) do
+						if v ~= "UNAVAILABLE" then
+							center = v
+							break
+						end
+					end
+					break
+				end
 				center = pseudorandom_element(_pool, pseudoseed("cry_trade_redeem_resample" .. it))
 			end
 			loc_name[i + 1] = center

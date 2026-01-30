@@ -549,7 +549,13 @@ local curate = { -- Hone T3; All cards appear with an Edition
 		local pe = poll_edition
 		function poll_edition(_key, _mod, _no_neg, _guaranteed, _options)
 			local ed = pe(_key, _mod, _no_neg, _guaranteed, _options)
+			local max_tries = 100
+			local tries = 0
 			while not ed and G.GAME.used_vouchers.v_cry_curate do
+				tries = tries + 1
+				if tries > max_tries then
+					break -- Safety exit: return nil if no edition found after max tries
+				end
 				ed = pe(_key, _mod, _no_neg, _guaranteed, _options)
 			end
 			return ed
@@ -1495,8 +1501,18 @@ return {
 			end
 			local center = pseudorandom_element(_pool, pseudoseed(_pool_key))
 			local it = 1
+			local max_tries = #_pool + 100
 			while center == "UNAVAILABLE" do
 				it = it + 1
+				if it > max_tries then
+					-- Safety exit: return first available or nil
+					for _, v in ipairs(_pool) do
+						if v ~= "UNAVAILABLE" then
+							return v
+						end
+					end
+					return nil
+				end
 				center = pseudorandom_element(_pool, pseudoseed(_pool_key .. "_resample" .. it))
 			end
 

@@ -118,7 +118,14 @@ local light = {
 		if context.cardarea == G.play and context.main_scoring then
 			if #context.scoring_hand > 1 then
 				card.ability.extra.current = card.ability.extra.current - (#context.scoring_hand - 1)
+				local max_iterations = 1000
+				local iterations = 0
 				while card.ability.extra.current <= 0 do
+					iterations = iterations + 1
+					if iterations > max_iterations then
+						card.ability.extra.current = 1 -- Safety exit: set to positive value
+						break
+					end
 					card.ability.extra.req = card.ability.extra.req + 5
 					card.ability.extra.current = card.ability.extra.current + card.ability.extra.req
 					card.ability.extra.current_x_mult = card.ability.extra.current_x_mult + card.ability.extra.a_x_mult

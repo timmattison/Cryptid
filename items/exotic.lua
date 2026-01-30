@@ -473,7 +473,13 @@ local redeo = {
 			card.ability.extra.money_remaining =
 				lenient_bignum(to_big(card.ability.extra.money_remaining) - context.cry_ease_dollars)
 			local ante_mod = 0
+			local max_iterations = 10000
+			local iterations = 0
 			while to_big(card.ability.extra.money_remaining) >= to_big(card.ability.extra.money_req) do
+				iterations = iterations + 1
+				if iterations > max_iterations then
+					break -- Safety exit to prevent infinite loop
+				end
 				card.ability.extra.money_remaining =
 					lenient_bignum(to_big(card.ability.extra.money_remaining) - card.ability.extra.money_req)
 				card.ability.extra.money_req =

@@ -5,8 +5,16 @@
 --Will be moved to D20 file when that gets added
 function Cryptid.roll(seed, min, max, config)
 	local val
+	local max_tries = 1000
+	local tries = 0
 	while not val or (config and config.ignore_value == val) do
-		val = pseudorandom(seed, min, max)
+		tries = tries + 1
+		if tries > max_tries then
+			-- Safety exit: return any valid value
+			return min
+		end
+		-- Vary the seed each iteration to avoid deterministic loops
+		val = pseudorandom(seed .. "_try" .. tries, min, max)
 	end
 	return val
 end

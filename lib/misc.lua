@@ -255,8 +255,22 @@ end
 -- generate a random edition (e.g. Antimatter Deck)
 function Cryptid.poll_random_edition()
 	local random_edition = pseudorandom_element(G.P_CENTER_POOLS.Edition, pseudoseed("cry_ant_edition"))
+	local max_tries = 100
+	local tries = 0
 	while random_edition.key == "e_base" do
-		random_edition = pseudorandom_element(G.P_CENTER_POOLS.Edition, pseudoseed("cry_ant_edition"))
+		tries = tries + 1
+		if tries > max_tries then
+			-- Safety exit: return first non-base edition or base if none found
+			for _, ed in ipairs(G.P_CENTER_POOLS.Edition) do
+				if ed.key ~= "e_base" then
+					random_edition = ed
+					break
+				end
+			end
+			break
+		end
+		-- Vary the seed each iteration
+		random_edition = pseudorandom_element(G.P_CENTER_POOLS.Edition, pseudoseed("cry_ant_edition_" .. tries))
 	end
 	ed_table = { [random_edition.key:sub(3)] = true }
 	return ed_table

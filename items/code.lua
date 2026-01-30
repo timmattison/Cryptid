@@ -927,8 +927,19 @@ local keygen = {
 		local _pool = get_current_pool("Voucher", nil, nil, nil, true)
 		local center = pseudorandom_element(_pool, pseudoseed("cry_keygen_redeem"))
 		local it = 1
+		local max_tries = #_pool + 100
 		while center == "UNAVAILABLE" do
 			it = it + 1
+			if it > max_tries then
+				-- Safety exit: return first available or fallback
+				for _, v in ipairs(_pool) do
+					if v ~= "UNAVAILABLE" then
+						center = v
+						break
+					end
+				end
+				break
+			end
 			center = pseudorandom_element(_pool, pseudoseed("cry_keygen_redeem_resample" .. it))
 		end
 		local card = create_card("Voucher", area, nil, nil, nil, nil, center)
@@ -3647,8 +3658,18 @@ local log = {
 			local _pool, _pool_key = get_current_pool("Joker", nil, nil, seed)
 			center = pseudorandom_element(_pool, pseudoseed(_pool_key))
 			local it = 1
+			local max_tries = #_pool + 100
 			while center == "UNAVAILABLE" do
 				it = it + 1
+				if it > max_tries then
+					-- Safety exit: return first available or nil
+					for _, v in ipairs(_pool) do
+						if v ~= "UNAVAILABLE" then
+							return v
+						end
+					end
+					return nil
+				end
 				center = pseudorandom_element(_pool, pseudoseed(_pool_key .. ("_resample" .. it)))
 			end
 
