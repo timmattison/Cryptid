@@ -4,8 +4,8 @@ This document describes the nil-access crash fixes, the test suite, and common p
 
 ## Summary
 
-- **21 bugs fixed** across 10 files
-- **94 tests written** (72 Lua + 22 TypeScript)
+- **22 bugs fixed** across 10 files
+- **95 tests written** (72 Lua + 23 TypeScript)
 - **2630 potential issues identified** by static analysis
 
 ## Bugs Fixed
@@ -96,6 +96,14 @@ The UI callback function accessed `e.config.object` without checking if the UI e
 
 The `Cryptid.get_random_hand` function had a `while true` loop with no escape condition if all poker hands were hidden or in the ignore list. This caused the game to freeze indefinitely. Added a max iteration counter (1000) with a fallback that returns the first visible hand or first hand in list.
 
+### lib/overrides.lua - Infinite Loop (1 fix)
+
+| Bug | Fix |
+|-----|-----|
+| `Ace Aequilibrium` joker creation infinite loop | Added `max_tries` counter to break if no viable jokers found |
+
+The `create_card` override for Ace Aequilibrium had a while loop that searched for a viable joker. If all jokers were locked, excluded, or exotic, the loop would run forever. Added max_tries counter that limits iterations to the number of jokers in the pool.
+
 ## Test Suite
 
 ### Lua Tests (72 tests)
@@ -129,7 +137,7 @@ Tests documenting safe vs unsafe patterns:
 - Callback array index staleness
 - Missing return in functions
 
-### TypeScript Regression Tests (22 tests)
+### TypeScript Regression Tests (23 tests)
 
 Run with: `npx tsx scripts/test-bug-fixes.ts`
 

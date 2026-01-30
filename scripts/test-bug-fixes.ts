@@ -217,6 +217,11 @@ test("exotic hand_text_area has nil check for config.object", () => {
 // lib/overrides.lua - Nil config.object fix
 // ============================================================================
 
+test("overrides Ace Aequilibrium loop has max iterations", () => {
+	// Should have max_tries to prevent infinite loop when no viable jokers
+	return overridesContent.includes("max_tries") && overridesContent.includes("tries > max_tries");
+});
+
 test("overrides badges has nil check for config.object", () => {
 	// Should check the deep chain before accessing config.object
 	return (

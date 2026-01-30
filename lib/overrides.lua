@@ -908,7 +908,15 @@ function create_card(_type, area, legendary, _rarity, skip_materialize, soulable
 		end
 		local aeqactive = nil
 		if next(find_joker("Ace Aequilibrium")) and not forced_key then
+			local max_tries = #G.P_CENTER_POOLS["Joker"] + 1
+			local tries = 0
 			while not aeqactive or not aeqviable(G.P_CENTER_POOLS.Joker[aeqactive]) do
+				tries = tries + 1
+				if tries > max_tries then
+					-- No viable jokers found, exit loop
+					aeqactive = nil
+					break
+				end
 				if math.ceil(G.GAME.aequilibriumkey) > #G.P_CENTER_POOLS["Joker"] then
 					G.GAME.aequilibriumkey = 1
 				end
