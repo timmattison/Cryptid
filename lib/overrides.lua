@@ -645,14 +645,16 @@ function Card:set_cost()
 	self.sell_cost_label = self.facing == "back" and "?" or self.sell_cost
 
 	-- YOLOEcon Deck: custom Joker pricing by rarity
+	-- Pricing: Common=$1, Uncommon=$2, Rare/Epic=$3, Legendary/Exotic=$4
+	-- Special rarities (cry_candy, cry_cursed) intentionally use base $1 price
 	if G.GAME.modifiers.cry_yoloecon and self.ability.set == "Joker" then
-		local rarity = self.config.center.rarity
-		local base_cost = 1 -- Default common
+		local rarity = self.config and self.config.center and self.config.center.rarity
+		local base_cost = 1 -- Default common (also used for cry_candy, cry_cursed)
 
 		if rarity == 2 then
 			base_cost = 2 -- Uncommon
-		elseif rarity == 3 then
-			base_cost = 3 -- Rare
+		elseif rarity == 3 or rarity == "cry_epic" then
+			base_cost = 3 -- Rare/Epic
 		elseif rarity == 4 or rarity == "cry_exotic" then
 			base_cost = 4 -- Legendary/Exotic
 		end
@@ -876,12 +878,6 @@ end
 
 -- This is short enough that I'm fine overriding it
 function calculate_reroll_cost(skip_increment)
-	-- YOLOEcon Deck: rerolls always cost $1
-	if G.GAME.modifiers.cry_yoloecon then
-		G.GAME.current_round.reroll_cost = 1
-		return
-	end
-
 	local limit = G.GAME.reroll_limit_buffer or nil
 	if not limit then
 		if next(find_joker("cry-candybuttons")) then
@@ -893,8 +889,14 @@ function calculate_reroll_cost(skip_increment)
 	if not G.GAME.current_round.free_rerolls or G.GAME.current_round.free_rerolls < 0 then
 		G.GAME.current_round.free_rerolls = 0
 	end
+	-- Free rerolls from jokers/tags take priority over deck modifiers
 	if next(find_joker("cry-crustulum")) or G.GAME.current_round.free_rerolls > 0 then
 		G.GAME.current_round.reroll_cost = 0
+		return
+	end
+	-- YOLOEcon Deck: rerolls always cost $1 (but free rerolls still work)
+	if G.GAME.modifiers.cry_yoloecon then
+		G.GAME.current_round.reroll_cost = 1
 		return
 	end
 	if
