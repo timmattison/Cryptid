@@ -1,3 +1,8 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = -1
+
 # Is this a joke? Deck - Legendary/Exotic Jokers in shop
 # This patch adds a chance for legendary and exotic jokers to appear in shop when the deck modifier is active
 
