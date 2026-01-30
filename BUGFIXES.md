@@ -4,8 +4,8 @@ This document describes the nil-access crash fixes, the test suite, and common p
 
 ## Summary
 
-- **22 bugs fixed** across 10 files
-- **95 tests written** (72 Lua + 23 TypeScript)
+- **23 bugs fixed** across 11 files
+- **96 tests written** (72 Lua + 24 TypeScript)
 - **2630 potential issues identified** by static analysis
 
 ## Bugs Fixed
@@ -104,6 +104,14 @@ The `Cryptid.get_random_hand` function had a `while true` loop with no escape co
 
 The `create_card` override for Ace Aequilibrium had a while loop that searched for a viable joker. If all jokers were locked, excluded, or exotic, the loop would run forever. Added max_tries counter that limits iterations to the number of jokers in the pool.
 
+### lib/forcetrigger.lua - Joker Buffer Bug (1 fix)
+
+| Bug | Fix |
+|-----|-----|
+| `Riff Raff` joker_buffer reset to 0 | Changed to decrement by jokers created |
+
+When Riff Raff was retriggered multiple times (e.g., by multiple Chad jokers with 8-15 retriggers each), the `joker_buffer` was incorrectly reset to 0 instead of being decremented. This caused the game to lose track of queued joker creations, potentially creating 60+ jokers and causing a freeze/crash.
+
 ## Test Suite
 
 ### Lua Tests (72 tests)
@@ -137,7 +145,7 @@ Tests documenting safe vs unsafe patterns:
 - Callback array index staleness
 - Missing return in functions
 
-### TypeScript Regression Tests (23 tests)
+### TypeScript Regression Tests (24 tests)
 
 Run with: `npx tsx scripts/test-bug-fixes.ts`
 

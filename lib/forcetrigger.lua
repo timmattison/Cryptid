@@ -501,19 +501,22 @@ function Cryptid.forcetrigger(card, context)
 		end
 		if card.ability.name == "Riff-raff" then
 			local jokers_to_create = math.min(2, G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer))
-			G.GAME.joker_buffer = G.GAME.joker_buffer + jokers_to_create
-			G.E_MANAGER:add_event(Event({
-				func = function()
-					for i = 1, jokers_to_create do
-						local card = create_card("Joker", G.jokers, nil, 0, nil, nil, nil, "rif")
-						card:add_to_deck()
-						G.jokers:emplace(card)
-						card:start_materialize()
-						G.GAME.joker_buffer = 0
-					end
-					return true
-				end,
-			}))
+			if jokers_to_create > 0 then
+				G.GAME.joker_buffer = G.GAME.joker_buffer + jokers_to_create
+				local jokers_queued = jokers_to_create -- capture for closure
+				G.E_MANAGER:add_event(Event({
+					func = function()
+						for i = 1, jokers_queued do
+							local card = create_card("Joker", G.jokers, nil, 0, nil, nil, nil, "rif")
+							card:add_to_deck()
+							G.jokers:emplace(card)
+							card:start_materialize()
+						end
+						G.GAME.joker_buffer = math.max(0, G.GAME.joker_buffer - jokers_queued)
+						return true
+					end,
+				}))
+			end
 		end
 		if card.ability.name == "Vampire" then
 			if context.scoring_hand and #context.scoring_hand > 0 then

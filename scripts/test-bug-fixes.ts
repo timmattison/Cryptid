@@ -231,6 +231,23 @@ test("overrides badges has nil check for config.object", () => {
 });
 
 // ============================================================================
+// lib/forcetrigger.lua - Riff Raff joker buffer fix
+// ============================================================================
+
+const forcetriggerContent = readFile("lib/forcetrigger.lua");
+
+test("Riff Raff forcetrigger decrements joker_buffer instead of resetting to 0", () => {
+	// Should decrement joker_buffer by jokers_queued, not reset to 0
+	// Look for the pattern: joker_buffer - jokers_queued (or similar decrement)
+	const riffRaffSection = forcetriggerContent.match(/Riff-raff[\s\S]*?joker_buffer[\s\S]*?return true/);
+	if (!riffRaffSection) return false;
+	return (
+		riffRaffSection[0].includes("joker_buffer - jokers_queued") ||
+		riffRaffSection[0].includes("math.max(0, G.GAME.joker_buffer - jokers_queued)")
+	);
+});
+
+// ============================================================================
 // items/planet.lua - Infinite loop fix
 // ============================================================================
 
