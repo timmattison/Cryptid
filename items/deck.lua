@@ -674,6 +674,37 @@ local blank = {
 	pos = { x = 1, y = 0 },
 	atlas = "atlasdeck",
 }
+local yoloecon = {
+	object_type = "Back",
+	dependencies = {
+		items = {
+			"set_cry_deck",
+		},
+	},
+	name = "cry-YOLOEcon",
+	key = "yoloecon",
+	order = 77,
+	config = {},
+	pos = { x = 3, y = 6 },
+	atlas = "atlasdeck",
+	loc_vars = function(self, info_queue, center)
+		return { vars = { 100, 10, 1, 2, 3, 4, 1, 1 } }
+	end,
+	apply = function(self)
+		-- Start with $100
+		G.GAME.starting_params.dollars = 100
+
+		-- Enable modifier flags
+		G.GAME.modifiers.cry_yoloecon = true
+
+		-- Fixed reroll cost of $1
+		G.GAME.round_resets.reroll_cost = 1
+
+		-- Doubled interest cap ($10 instead of $5, means cap = 50)
+		G.GAME.modifiers.cry_yoloecon_interest_cap = 50
+	end,
+	unlocked = true,
+}
 local antimatter = {
 	object_type = "Back",
 	dependencies = {
@@ -1220,6 +1251,7 @@ return {
 		bountiful,
 		beige,
 		blank,
+		yoloecon,
 		antimatter,
 		e_deck,
 		et_deck,

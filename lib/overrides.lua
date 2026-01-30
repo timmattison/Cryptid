@@ -245,6 +245,11 @@ function Blind:set_blind(blind, y, z)
 		blind.mult = G.GAME.CRY_BLINDS[c]
 	end
 	bsb(self, blind, y, z)
+
+	-- YOLOEcon Deck: no money from blinds
+	if G.GAME.modifiers.cry_yoloecon then
+		self.dollars = 0
+	end
 end
 
 local rb = reset_blinds
@@ -638,6 +643,29 @@ function Card:set_cost()
 		self.sell_cost = G.GAME.cry_rotten_amount
 	end
 	self.sell_cost_label = self.facing == "back" and "?" or self.sell_cost
+
+	-- YOLOEcon Deck: custom Joker pricing by rarity
+	if G.GAME.modifiers.cry_yoloecon and self.ability.set == "Joker" then
+		local rarity = self.config.center.rarity
+		local base_cost = 1 -- Default common
+
+		if rarity == 2 then
+			base_cost = 2 -- Uncommon
+		elseif rarity == 3 then
+			base_cost = 3 -- Rare
+		elseif rarity == 4 or rarity == "cry_exotic" then
+			base_cost = 4 -- Legendary/Exotic
+		end
+
+		-- Editions add $1
+		if self.edition then
+			base_cost = base_cost + 1
+		end
+
+		self.cost = base_cost
+		self.sell_cost = math.max(1, math.floor(self.cost / 2)) + (self.ability.extra_value or 0)
+		self.sell_cost_label = self.facing == "back" and "?" or self.sell_cost
+	end
 end
 
 local sell_card_stuff = Card.sell_card
@@ -848,6 +876,12 @@ end
 
 -- This is short enough that I'm fine overriding it
 function calculate_reroll_cost(skip_increment)
+	-- YOLOEcon Deck: rerolls always cost $1
+	if G.GAME.modifiers.cry_yoloecon then
+		G.GAME.current_round.reroll_cost = 1
+		return
+	end
+
 	local limit = G.GAME.reroll_limit_buffer or nil
 	if not limit then
 		if next(find_joker("cry-candybuttons")) then
