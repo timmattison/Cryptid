@@ -760,8 +760,10 @@ function SMODS.create_mod_badges(obj, badges)
 				return true
 			end
 			for i = 1, #badges do
-				if eq_col(badges[i].nodes[1].config.colour, HEX("708b91")) then
-					badges[i].nodes[1].nodes[2].config.object:remove()
+				if badges[i].nodes and badges[i].nodes[1] and badges[i].nodes[1].config and eq_col(badges[i].nodes[1].config.colour, HEX("708b91")) then
+					if badges[i].nodes[1].nodes and badges[i].nodes[1].nodes[2] and badges[i].nodes[1].nodes[2].config and badges[i].nodes[1].nodes[2].config.object then
+						badges[i].nodes[1].nodes[2].config.object:remove()
+					end
 					badges[i] = cry_badge
 					break
 				end

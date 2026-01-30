@@ -4,8 +4,8 @@ This document describes the nil-access crash fixes, the test suite, and common p
 
 ## Summary
 
-- **17 bugs fixed** across 7 files
-- **85 tests written** (67 Lua + 18 TypeScript)
+- **20 bugs fixed** across 9 files
+- **92 tests written** (71 Lua + 21 TypeScript)
 - **2630 potential issues identified** by static analysis
 
 ## Bugs Fixed
@@ -68,13 +68,33 @@ The epic tag iterates jokers and uses their key as a table key to track which ep
 | `set_ability` nil rarity as table key | Added `if v.rarity then` check before using as key |
 | `banish` nil key as table key | Added nil checks for `card.config.center.key` before using as key |
 
+### lib/ascended.lua - Nil config.object (1 fix)
+
+| Bug | Fix |
+|-----|-----|
+| `cry_asc_UI_set` nil object | Added `if not (e.config and e.config.object) then return end` |
+
+The UI callback function accessed `e.config.object` without checking if the UI element was fully initialized, causing "attempt to index field 'object' (a nil value)" in engine/ui.lua.
+
+### items/exotic.lua - Nil config.object (1 fix, 2 locations)
+
+| Bug | Fix |
+|-----|-----|
+| `hand_text_area` nil object | Added nil checks for `G.hand_text_area.handname.config.object` and `G.hand_text_area.chip_total.config.object` |
+
+### lib/overrides.lua - Nil config.object (1 fix)
+
+| Bug | Fix |
+|-----|-----|
+| `badges` deep chain nil | Added nil checks for `badges[i].nodes[1].nodes[2].config.object` |
+
 ## Test Suite
 
-### Lua Tests (67 tests)
+### Lua Tests (71 tests)
 
 Run with: `cd tests && lua run-all-tests.lua`
 
-#### test-nil-safety.lua (30 tests)
+#### test-nil-safety.lua (34 tests)
 Tests verifying the specific bug fixes work correctly:
 - Colour pre-initialization tests
 - G.shared_seals/G.shared_stickers nil check tests
@@ -101,7 +121,7 @@ Tests documenting safe vs unsafe patterns:
 - Callback array index staleness
 - Missing return in functions
 
-### TypeScript Regression Tests (18 tests)
+### TypeScript Regression Tests (21 tests)
 
 Run with: `npx tsx scripts/test-bug-fixes.ts`
 

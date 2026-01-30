@@ -1,6 +1,9 @@
 -- ascended.lua - Used for Ascended Hands
 
 G.FUNCS.cry_asc_UI_set = function(e)
+	if not (e.config and e.config.object) then
+		return
+	end
 	if G.GAME.cry_exploit_override then
 		e.config.object.colours = { darken(G.C.SECONDARY_SET.Code, 0.2) }
 	else

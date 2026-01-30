@@ -221,13 +221,15 @@ local universum = {
 						end
 						if vals.handname and G.GAME.current_round.current_hand.handname ~= vals.handname then
 							G.GAME.current_round.current_hand.handname = vals.handname
-							if not config.nopulse then
+							if not config.nopulse and G.hand_text_area and G.hand_text_area.handname and G.hand_text_area.handname.config and G.hand_text_area.handname.config.object then
 								G.hand_text_area.handname.config.object:pulse(0.2)
 							end
 						end
 						if vals.chip_total then
 							G.GAME.current_round.current_hand.chip_total = vals.chip_total
-							G.hand_text_area.chip_total.config.object:pulse(0.5)
+							if G.hand_text_area and G.hand_text_area.chip_total and G.hand_text_area.chip_total.config and G.hand_text_area.chip_total.config.object then
+								G.hand_text_area.chip_total.config.object:pulse(0.5)
+							end
 						end
 						if
 							vals.level

@@ -419,6 +419,59 @@ T:test("table key: safe pattern checks key before use", function()
 end)
 
 -- ============================================================================
+-- CONFIG.OBJECT NIL CHECK TESTS (UI crash fixes)
+-- ============================================================================
+
+T:test("config.object: nil object crashes when accessing property", function()
+	local e = { config = { object = nil } }
+
+	T:assertThrows(function()
+		e.config.object.colours = { 1, 0, 0, 1 }
+	end, "Accessing property of nil object should crash")
+end)
+
+T:test("config.object: nil object crashes when calling method", function()
+	local e = { config = { object = nil } }
+
+	T:assertThrows(function()
+		e.config.object:update_text()
+	end, "Calling method on nil object should crash")
+end)
+
+T:test("config.object: safe pattern checks object exists", function()
+	local e = { config = { object = nil } }
+
+	T:assertNoThrow(function()
+		if e.config and e.config.object then
+			e.config.object.colours = { 1, 0, 0, 1 }
+			e.config.object:update_text()
+		end
+	end, "Checking object exists should prevent crash")
+end)
+
+T:test("config.object: works when object exists", function()
+	local updated = false
+	local e = {
+		config = {
+			object = {
+				colours = {},
+				update_text = function(self)
+					updated = true
+				end,
+			},
+		},
+	}
+
+	if e.config and e.config.object then
+		e.config.object.colours = { 1, 0, 0, 1 }
+		e.config.object:update_text()
+	end
+
+	T:assertEqual(1, e.config.object.colours[1], "Should set colour")
+	T:assert(updated, "Should call update_text")
+end)
+
+-- ============================================================================
 -- ARGS.COLOUR NIL CHECK TEST (BalatroMultiplayer fix pattern)
 -- ============================================================================
 

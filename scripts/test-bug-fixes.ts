@@ -191,6 +191,41 @@ test("epic banish has nil check for key before use as table key", () => {
 });
 
 // ============================================================================
+// lib/ascended.lua - Nil config.object fix
+// ============================================================================
+
+const ascendedContent = readFile("lib/ascended.lua");
+
+test("ascended UI callback has nil check for e.config.object", () => {
+	// Should check e.config and e.config.object before accessing
+	return ascendedContent.includes("e.config and e.config.object");
+});
+
+// ============================================================================
+// items/exotic.lua - Nil config.object fix
+// ============================================================================
+
+test("exotic hand_text_area has nil check for config.object", () => {
+	// Should check G.hand_text_area and nested objects before accessing
+	return (
+		exoticContent.includes("G.hand_text_area and G.hand_text_area.handname and G.hand_text_area.handname.config and G.hand_text_area.handname.config.object") ||
+		exoticContent.includes("if G.hand_text_area and G.hand_text_area.handname")
+	);
+});
+
+// ============================================================================
+// lib/overrides.lua - Nil config.object fix
+// ============================================================================
+
+test("overrides badges has nil check for config.object", () => {
+	// Should check the deep chain before accessing config.object
+	return (
+		overridesContent.includes("badges[i].nodes[1].nodes[2].config and badges[i].nodes[1].nodes[2].config.object") ||
+		overridesContent.includes("and badges[i].nodes and badges[i].nodes[1] and badges[i].nodes[1].nodes")
+	);
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 
