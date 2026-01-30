@@ -4,8 +4,8 @@ This document describes the nil-access crash fixes, the test suite, and common p
 
 ## Summary
 
-- **20 bugs fixed** across 9 files
-- **92 tests written** (71 Lua + 21 TypeScript)
+- **21 bugs fixed** across 10 files
+- **94 tests written** (72 Lua + 22 TypeScript)
 - **2630 potential issues identified** by static analysis
 
 ## Bugs Fixed
@@ -88,13 +88,21 @@ The UI callback function accessed `e.config.object` without checking if the UI e
 |-----|-----|
 | `badges` deep chain nil | Added nil checks for `badges[i].nodes[1].nodes[2].config.object` |
 
+### items/planet.lua - Infinite Loop (1 fix)
+
+| Bug | Fix |
+|-----|-----|
+| `get_random_hand` infinite loop | Added `max_tries` counter with fallback return |
+
+The `Cryptid.get_random_hand` function had a `while true` loop with no escape condition if all poker hands were hidden or in the ignore list. This caused the game to freeze indefinitely. Added a max iteration counter (1000) with a fallback that returns the first visible hand or first hand in list.
+
 ## Test Suite
 
-### Lua Tests (71 tests)
+### Lua Tests (72 tests)
 
 Run with: `cd tests && lua run-all-tests.lua`
 
-#### test-nil-safety.lua (34 tests)
+#### test-nil-safety.lua (35 tests)
 Tests verifying the specific bug fixes work correctly:
 - Colour pre-initialization tests
 - G.shared_seals/G.shared_stickers nil check tests
@@ -121,7 +129,7 @@ Tests documenting safe vs unsafe patterns:
 - Callback array index staleness
 - Missing return in functions
 
-### TypeScript Regression Tests (21 tests)
+### TypeScript Regression Tests (22 tests)
 
 Run with: `npx tsx scripts/test-bug-fixes.ts`
 

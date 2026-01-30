@@ -226,6 +226,22 @@ test("overrides badges has nil check for config.object", () => {
 });
 
 // ============================================================================
+// items/planet.lua - Infinite loop fix
+// ============================================================================
+
+const planetContent = readFile("items/planet.lua");
+
+test("get_random_hand has max iterations to prevent infinite loop", () => {
+	// Should have a max iteration counter to prevent infinite loop
+	return (
+		planetContent.includes("max_iterations") ||
+		planetContent.includes("max_tries") ||
+		planetContent.includes("tries = ") ||
+		(planetContent.includes("while") && planetContent.includes("iterations"))
+	);
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 

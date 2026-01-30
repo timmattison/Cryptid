@@ -855,7 +855,20 @@ local nstar = {
 			if type(ignore) ~= "table" then
 				ignore = { ignore }
 			end
+			local max_tries = 1000
+			local tries = 0
 			while true do
+				tries = tries + 1
+				if tries > max_tries then
+					-- Safety exit: return first visible hand or any hand if all hidden
+					for _, hand in ipairs(G.handlist) do
+						if G.GAME.hands[hand].visible or allowhidden then
+							return hand
+						end
+					end
+					-- Fallback: return first hand in list
+					return G.handlist[1]
+				end
 				chosen_hand = pseudorandom_element(G.handlist, pseudoseed(seed))
 				if G.GAME.hands[chosen_hand].visible or allowhidden then
 					local safe = true

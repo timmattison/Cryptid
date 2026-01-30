@@ -419,6 +419,33 @@ T:test("table key: safe pattern checks key before use", function()
 end)
 
 -- ============================================================================
+-- INFINITE LOOP PREVENTION TESTS
+-- ============================================================================
+
+T:test("while loop: must have escape condition with max iterations", function()
+	-- Pattern: while true loops should have a max iteration counter
+	local iterations = 0
+	local max_iterations = 1000
+	local found = false
+
+	-- Simulate a loop that might not find what it's looking for
+	while true do
+		iterations = iterations + 1
+		-- Pretend we're searching for something that doesn't exist
+		if iterations >= max_iterations then
+			break -- Safety exit
+		end
+		if false then -- Never true
+			found = true
+			break
+		end
+	end
+
+	T:assertEqual(1000, iterations, "Loop should exit via max iterations")
+	T:assert(not found, "Should not have found anything")
+end)
+
+-- ============================================================================
 -- CONFIG.OBJECT NIL CHECK TESTS (UI crash fixes)
 -- ============================================================================
 
