@@ -1181,6 +1181,65 @@ local antimatter = {
 	end,
 }
 
+local is_this_a_joke = {
+	object_type = "Back",
+	dependencies = {
+		items = {
+			"set_cry_deck",
+			"set_cry_epic",
+		},
+	},
+	name = "cry-Is this a joke?",
+	key = "is_this_a_joke",
+	order = 16,
+	config = { vouchers = { "v_hone" } },
+	pos = { x = 3, y = 6 },
+	atlas = "atlasdeck",
+	apply = function(self)
+		G.GAME.modifiers.cry_is_this_a_joke = true
+	end,
+	init = function(self)
+		-- Hook G.FUNCS.can_buy to prevent buying common jokers
+		local cry_itaj_can_buy = G.FUNCS.can_buy
+		function G.FUNCS.can_buy(e)
+			if G.GAME and G.GAME.modifiers and G.GAME.modifiers.cry_is_this_a_joke then
+				if
+					e.config.ref_table
+					and e.config.ref_table.config
+					and e.config.ref_table.config.center
+					and e.config.ref_table.config.center.set == "Joker"
+					and e.config.ref_table.config.center.rarity == 1
+				then
+					e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+					e.config.button = nil
+					return
+				end
+			end
+			return cry_itaj_can_buy(e)
+		end
+
+		-- Hook G.FUNCS.can_select_card to prevent selecting common jokers in packs
+		local cry_itaj_can_select = G.FUNCS.can_select_card
+		G.FUNCS.can_select_card = function(e)
+			if G.GAME and G.GAME.modifiers and G.GAME.modifiers.cry_is_this_a_joke then
+				if
+					e.config.ref_table
+					and e.config.ref_table.config
+					and e.config.ref_table.config.center
+					and e.config.ref_table.config.center.set == "Joker"
+					and e.config.ref_table.config.center.rarity == 1
+				then
+					e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+					e.config.button = nil
+					return
+				end
+			end
+			return cry_itaj_can_select(e)
+		end
+	end,
+	unlocked = true,
+}
+
 --[[
 Customize your Antimatter Deck here for the TRUE Sandbox experience!
 How to use Custom Antimatter Deck:
@@ -1221,6 +1280,7 @@ return {
 		beige,
 		blank,
 		antimatter,
+		is_this_a_joke,
 		e_deck,
 		et_deck,
 		sk_deck,
