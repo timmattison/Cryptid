@@ -293,7 +293,7 @@ return {
 				name = "YOLOEcon Deck",
 				text = {
 					"Start with {C:money}$#1#{}, earn {C:red}$0{}",
-					"from defeating blinds",
+					"from blinds or remaining hands",
 					"Interest cap is {C:money}$#2#{} {C:inactive}(doubled){}",
 					"{C:attention}Joker{} costs: {C:blue}Common{} {C:money}$#3#{},",
 					"{C:green}Uncommon{} {C:money}$#4#{}, {C:red}Rare{} {C:money}$#5#{},",

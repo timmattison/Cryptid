@@ -702,6 +702,9 @@ local yoloecon = {
 
 		-- Doubled interest cap ($10 instead of $5, means cap = 50)
 		G.GAME.modifiers.cry_yoloecon_interest_cap = 50
+
+		-- No money from remaining hands
+		G.GAME.modifiers.money_per_hand = 0
 	end,
 	unlocked = true,
 }
