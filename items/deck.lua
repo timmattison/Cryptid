@@ -674,6 +674,40 @@ local blank = {
 	pos = { x = 1, y = 0 },
 	atlas = "atlasdeck",
 }
+local yoloecon = {
+	object_type = "Back",
+	dependencies = {
+		items = {
+			"set_cry_deck",
+		},
+	},
+	name = "cry-YOLOEcon",
+	key = "yoloecon",
+	order = 77,
+	config = {},
+	pos = { x = 3, y = 6 },
+	atlas = "atlasdeck",
+	loc_vars = function(self, info_queue, center)
+		return { vars = { 100, 10, 1, 2, 3, 4, 1, 1 } }
+	end,
+	apply = function(self)
+		-- Start with $100
+		G.GAME.starting_params.dollars = 100
+
+		-- Enable modifier flags
+		G.GAME.modifiers.cry_yoloecon = true
+
+		-- Fixed reroll cost of $1
+		G.GAME.round_resets.reroll_cost = 1
+
+		-- Doubled interest cap ($10 instead of $5, means cap = 50)
+		G.GAME.modifiers.cry_yoloecon_interest_cap = 50
+
+		-- No money from remaining hands
+		G.GAME.modifiers.money_per_hand = 0
+	end,
+	unlocked = true,
+}
 local antimatter = {
 	object_type = "Back",
 	dependencies = {
@@ -1236,6 +1270,70 @@ local recycling_fee = {
 	unlocked = true,
 }
 
+local is_this_a_joke = {
+	object_type = "Back",
+	dependencies = {
+		items = {
+			"set_cry_deck",
+			-- Note: set_cry_exotic is NOT a dependency - the deck works with just legendary jokers
+			-- The Lovely patch has a runtime check for exotic: Cryptid.enabled('set_cry_exotic')
+		},
+	},
+	name = "cry-Is this a joke?",
+	key = "is_this_a_joke",
+	order = 16,
+	config = { vouchers = { "v_hone" } },
+	pos = { x = 4, y = 6 },
+	atlas = "atlasdeck",
+	apply = function(self)
+		G.GAME.modifiers.cry_is_this_a_joke = true
+	end,
+	init = function(self)
+		-- Hook G.FUNCS.can_buy to prevent buying common jokers
+		local cry_itaj_can_buy = G.FUNCS.can_buy
+		function G.FUNCS.can_buy(e)
+			if G.GAME and G.GAME.modifiers and G.GAME.modifiers.cry_is_this_a_joke then
+				if
+					e
+					and e.config
+					and e.config.ref_table
+					and e.config.ref_table.config
+					and e.config.ref_table.config.center
+					and e.config.ref_table.config.center.set == "Joker"
+					and e.config.ref_table.config.center.rarity == 1
+				then
+					e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+					e.config.button = nil
+					return
+				end
+			end
+			return cry_itaj_can_buy(e)
+		end
+
+		-- Hook G.FUNCS.can_select_card to prevent selecting common jokers in packs
+		local cry_itaj_can_select = G.FUNCS.can_select_card
+		G.FUNCS.can_select_card = function(e)
+			if G.GAME and G.GAME.modifiers and G.GAME.modifiers.cry_is_this_a_joke then
+				if
+					e
+					and e.config
+					and e.config.ref_table
+					and e.config.ref_table.config
+					and e.config.ref_table.config.center
+					and e.config.ref_table.config.center.set == "Joker"
+					and e.config.ref_table.config.center.rarity == 1
+				then
+					e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+					e.config.button = nil
+					return
+				end
+			end
+			return cry_itaj_can_select(e)
+		end
+	end,
+	unlocked = true,
+}
+
 --[[
 Customize your Antimatter Deck here for the TRUE Sandbox experience!
 How to use Custom Antimatter Deck:
@@ -1275,8 +1373,10 @@ return {
 		bountiful,
 		beige,
 		blank,
+		yoloecon,
 		antimatter,
 		recycling_fee,
+		is_this_a_joke,
 		e_deck,
 		et_deck,
 		sk_deck,

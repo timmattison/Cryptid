@@ -298,6 +298,25 @@ return {
 					"at the same time",
 				},
 			},
+			b_cry_yoloecon = {
+				name = "YOLOEcon Deck",
+				text = {
+					"Start with {C:money}$#1#{}, {C:red}no round income{}",
+					"Interest cap {C:money}$#2#{}, rerolls {C:money}$#8#{}",
+					"{C:attention}Jokers{}: {C:money}$#3#{}/$#4#/$#5#/$#6#{} {C:inactive}(C/U/R/L){}",
+					"{C:dark_edition}Editions{} {C:money}+$#7#{}",
+				},
+			},
+			b_cry_is_this_a_joke = {
+				name = "Is this a joke? Deck",
+				text = {
+					"{C:attention}Common{} Jokers appear",
+					"but cannot be obtained",
+					"{C:legendary}Legendary{} and {C:cry_exotic}Exotic{}",
+					"Jokers can appear in shops",
+					"Start with {C:voucher}Hone{}",
+				},
+			},
 		},
 		Blind = {
 			bl_cry_box = {
