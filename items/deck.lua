@@ -1194,7 +1194,7 @@ local is_this_a_joke = {
 	key = "is_this_a_joke",
 	order = 16,
 	config = { vouchers = { "v_hone" } },
-	pos = { x = 3, y = 6 },
+	pos = { x = 4, y = 6 },
 	atlas = "atlasdeck",
 	apply = function(self)
 		G.GAME.modifiers.cry_is_this_a_joke = true
