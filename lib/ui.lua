@@ -347,6 +347,20 @@ function G.UIDEF.use_and_sell_buttons(card)
 	then
 		table.remove(abc.nodes[1].nodes, 1)
 	end
+	-- Block sell button if recycling fee applies and player can't afford it
+	if
+		G.GAME
+		and G.GAME.modifiers
+		and G.GAME.modifiers.cry_recycling_fee
+		and card.sell_cost
+		and card.sell_cost < 0
+		and G.GAME.dollars < math.abs(card.sell_cost)
+		and abc.nodes
+		and abc.nodes[1]
+		and abc.nodes[1].nodes
+	then
+		table.remove(abc.nodes[1].nodes, 1)
+	end
 	-- i love buttercup
 	if
 		card.area

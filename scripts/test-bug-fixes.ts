@@ -264,6 +264,37 @@ test("get_random_hand has max iterations to prevent infinite loop", () => {
 });
 
 // ============================================================================
+// items/deck.lua - Recycling Fee Deck mechanic interaction tests
+// ============================================================================
+
+const deckContent = readFile("items/deck.lua");
+
+test("Recycling Fee deck checks for Ember Stake (cry_no_sell_value)", () => {
+	// Should skip applying recycling fee if Ember Stake is active
+	// This prevents conflicting sell mechanics
+	return deckContent.includes("cry_no_sell_value");
+});
+
+test("Recycling Fee deck checks for Rotten Egg mechanic (cry_rotten_amount)", () => {
+	// Should skip applying recycling fee if Rotten Egg is controlling sell costs
+	return deckContent.includes("cry_rotten_amount");
+});
+
+test("Recycling Fee deck exempts cursed jokers", () => {
+	// Cursed jokers have sell_cost = 0 and shouldn't be overridden to -2
+	// Should check for rarity == "cry_cursed"
+	return (
+		deckContent.includes('rarity == "cry_cursed"') ||
+		deckContent.includes("rarity == 'cry_cursed'")
+	);
+});
+
+test("Recycling Fee deck exempts Egg jokers", () => {
+	// Both vanilla Egg (j_egg) and Cryptid Megg (j_cry_megg) should be exempt
+	return deckContent.includes("j_egg") && deckContent.includes("j_cry_megg");
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 
