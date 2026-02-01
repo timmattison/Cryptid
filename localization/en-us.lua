@@ -298,6 +298,16 @@ return {
 					"{C:dark_edition}Editions{} {C:money}+$#7#{}",
 				},
 			},
+			b_cry_is_this_a_joke = {
+				name = "Is this a joke? Deck",
+				text = {
+					"{C:attention}Common{} Jokers appear",
+					"but cannot be obtained",
+					"{C:legendary}Legendary{} and {C:cry_exotic}Exotic{}",
+					"Jokers can appear in shops",
+					"Start with {C:voucher}Hone{}",
+				},
+			},
 		},
 		Blind = {
 			bl_cry_box = {

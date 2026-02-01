@@ -1,0 +1,41 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = -1
+
+# Is this a joke? Deck - Legendary/Exotic Jokers in shop
+# This patch adds a chance for legendary and exotic jokers to appear in shop when the deck modifier is active
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''if G.load_shop_booster then'''
+position = "before"
+payload = '''
+if G.GAME.modifiers.cry_is_this_a_joke and G.shop_jokers then
+    -- Check for each shop joker slot if we should spawn a legendary or exotic
+    -- 2% chance (1/50) per slot for legendary, 2% for exotic
+    local slots = (G.GAME.shop and G.GAME.shop.joker_max) or 2
+    for i = 1, slots do
+        local roll = pseudorandom('cry_itaj_legendary' .. G.GAME.round_resets.ante .. '_' .. i)
+        if roll < 0.02 then
+            -- Spawn legendary joker (2% = 1/50 chance per slot)
+            local card = create_card('Joker', G.jokers, true, nil, nil, nil, nil, 'cry_itaj')
+            Cryptid.manipulate(card)
+            create_shop_card_ui(card, 'Joker', G.shop_jokers)
+            card:start_materialize()
+            G.shop_jokers.config.card_limit = G.shop_jokers.config.card_limit + 1
+            G.shop_jokers:emplace(card)
+        elseif roll < 0.04 and Cryptid.enabled('set_cry_exotic') then
+            -- Spawn exotic joker (2% = 1/50 chance per slot, if exotic enabled)
+            local card = create_card('Joker', G.jokers, nil, 'cry_exotic', nil, nil, nil, 'cry_itaj')
+            Cryptid.manipulate(card)
+            create_shop_card_ui(card, 'Joker', G.shop_jokers)
+            card:start_materialize()
+            G.shop_jokers.config.card_limit = G.shop_jokers.config.card_limit + 1
+            G.shop_jokers:emplace(card)
+        end
+    end
+end
+'''
+match_indent = true
