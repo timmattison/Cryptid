@@ -381,6 +381,12 @@ end
 -- make seed money/other vouchers better at some point?
 function cry_best_interest_cap()
 	local best = 25
+
+	-- YOLOEcon Deck: doubled interest cap
+	if G.GAME.modifiers.cry_yoloecon_interest_cap then
+		best = math.max(best, G.GAME.modifiers.cry_yoloecon_interest_cap)
+	end
+
 	local vouchers = {
 		SMODS.find_card("v_seed_money"),
 		SMODS.find_card("v_money_tree"),
