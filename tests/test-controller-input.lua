@@ -1,6 +1,6 @@
 #!/usr/bin/env lua
 --- Controller input tests for Cryptid
---- These tests verify the controller shoulder button functionality
+--- These tests verify the controller button functionality (Y, L3, R3)
 
 package.path = package.path .. ";./?.lua"
 
@@ -19,7 +19,7 @@ end
 --- Create mock Cryptid_config
 local function create_mock_config(overrides)
 	local config = {
-		controller_shoulders = true,
+		controller_buttons = true,
 	}
 	if overrides then
 		for k, v in pairs(overrides) do
@@ -106,19 +106,19 @@ end
 T:test("Config: feature enabled by default when config exists", function()
 	-- Simulate the config check logic
 	local config = create_mock_config()
-	local enabled = config.controller_shoulders ~= false
+	local enabled = config.controller_buttons ~= false
 	T:assert(enabled, "Feature should be enabled by default")
 end)
 
 T:test("Config: feature can be disabled", function()
-	local config = create_mock_config({ controller_shoulders = false })
-	local enabled = config.controller_shoulders ~= false
+	local config = create_mock_config({ controller_buttons = false })
+	local enabled = config.controller_buttons ~= false
 	T:assert(not enabled, "Feature should be disabled when set to false")
 end)
 
 T:test("Config: feature enabled when value is nil", function()
 	local config = {}
-	local enabled = config.controller_shoulders ~= false
+	local enabled = config.controller_buttons ~= false
 	T:assert(enabled, "Feature should be enabled when value is nil")
 end)
 
@@ -280,75 +280,6 @@ T:test("Nil safety: handle target without area", function()
 	-- Simulate the check from shoulder_select_focused
 	local has_area = target and target.area
 	T:assert(not has_area, "Should detect missing area property")
-end)
-
--- ============================================================================
--- SHOULDER STATE TESTS
--- ============================================================================
-
-T:test("State: shoulder_state tracks left button press", function()
-	local shoulder_state = {
-		left_pressed = false,
-		right_pressed = false,
-		both_action_fired = false,
-	}
-	-- Simulate press
-	shoulder_state.left_pressed = true
-	T:assert(shoulder_state.left_pressed, "Left should be pressed")
-	T:assert(not shoulder_state.right_pressed, "Right should not be pressed")
-end)
-
-T:test("State: shoulder_state tracks right button press", function()
-	local shoulder_state = {
-		left_pressed = false,
-		right_pressed = false,
-		both_action_fired = false,
-	}
-	-- Simulate press
-	shoulder_state.right_pressed = true
-	T:assert(not shoulder_state.left_pressed, "Left should not be pressed")
-	T:assert(shoulder_state.right_pressed, "Right should be pressed")
-end)
-
-T:test("State: shoulder_state detects both pressed", function()
-	local shoulder_state = {
-		left_pressed = true,
-		right_pressed = true,
-		both_action_fired = false,
-	}
-	local both_pressed = shoulder_state.left_pressed and shoulder_state.right_pressed
-	T:assert(both_pressed, "Should detect both buttons pressed")
-end)
-
-T:test("State: both_action_fired prevents repeated firing", function()
-	local shoulder_state = {
-		left_pressed = true,
-		right_pressed = true,
-		both_action_fired = false,
-	}
-	local fire_count = 0
-	-- Simulate multiple checks
-	for _ = 1, 3 do
-		if shoulder_state.left_pressed and shoulder_state.right_pressed then
-			if not shoulder_state.both_action_fired then
-				shoulder_state.both_action_fired = true
-				fire_count = fire_count + 1
-			end
-		end
-	end
-	T:assertEqual(1, fire_count, "Action should only fire once")
-end)
-
-T:test("State: release resets both_action_fired", function()
-	local shoulder_state = {
-		left_pressed = true,
-		right_pressed = true,
-		both_action_fired = true,
-	}
-	-- Simulate release
-	shoulder_state.left_pressed = false
-	shoulder_state.both_action_fired = false
-	T:assert(not shoulder_state.both_action_fired, "both_action_fired should reset on release")
 end)
 
 -- ============================================================================
