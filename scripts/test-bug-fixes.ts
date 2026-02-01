@@ -264,6 +264,39 @@ test("get_random_hand has max iterations to prevent infinite loop", () => {
 });
 
 // ============================================================================
+// items/deck.lua - Nil safety in hooks
+// ============================================================================
+
+const deckContent = readFile("items/deck.lua");
+
+test("is_this_a_joke can_buy hook has nil check for e and e.config", () => {
+	// Should check e and e.config before accessing e.config.ref_table
+	// Look for the pattern in can_buy function
+	const canBuySection = deckContent.match(/function G\.FUNCS\.can_buy\(e\)[\s\S]*?cry_itaj_can_buy\(e\)/);
+	if (!canBuySection) return false;
+	return canBuySection[0].includes("e\n\t\t\t\t\tand e.config") || canBuySection[0].includes("e and e.config");
+});
+
+test("is_this_a_joke can_select_card hook has nil check for e and e.config", () => {
+	// Should check e and e.config before accessing e.config.ref_table
+	// Look for the pattern in can_select_card function
+	const canSelectSection = deckContent.match(/G\.FUNCS\.can_select_card = function\(e\)[\s\S]*?cry_itaj_can_select\(e\)/);
+	if (!canSelectSection) return false;
+	return canSelectSection[0].includes("e\n\t\t\t\t\tand e.config") || canSelectSection[0].includes("e and e.config");
+});
+
+test("is_this_a_joke does NOT have set_cry_exotic as hard dependency", () => {
+	// The deck should work with just legendary jokers when exotic is disabled
+	// The Lovely patch has a runtime check for exotic instead
+	const itajSection = deckContent.match(/local is_this_a_joke = \{[\s\S]*?unlocked = true,\s*\}/);
+	if (!itajSection) return false;
+	const depsSection = itajSection[0].match(/dependencies = \{[\s\S]*?\},\s*\}/);
+	if (!depsSection) return false;
+	// Should NOT contain set_cry_exotic in dependencies
+	return !depsSection[0].includes('"set_cry_exotic"');
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 

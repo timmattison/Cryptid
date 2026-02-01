@@ -1186,7 +1186,8 @@ local is_this_a_joke = {
 	dependencies = {
 		items = {
 			"set_cry_deck",
-			"set_cry_exotic",
+			-- Note: set_cry_exotic is NOT a dependency - the deck works with just legendary jokers
+			-- The Lovely patch has a runtime check for exotic: Cryptid.enabled('set_cry_exotic')
 		},
 	},
 	name = "cry-Is this a joke?",
@@ -1204,7 +1205,9 @@ local is_this_a_joke = {
 		function G.FUNCS.can_buy(e)
 			if G.GAME and G.GAME.modifiers and G.GAME.modifiers.cry_is_this_a_joke then
 				if
-					e.config.ref_table
+					e
+					and e.config
+					and e.config.ref_table
 					and e.config.ref_table.config
 					and e.config.ref_table.config.center
 					and e.config.ref_table.config.center.set == "Joker"
@@ -1223,7 +1226,9 @@ local is_this_a_joke = {
 		G.FUNCS.can_select_card = function(e)
 			if G.GAME and G.GAME.modifiers and G.GAME.modifiers.cry_is_this_a_joke then
 				if
-					e.config.ref_table
+					e
+					and e.config
+					and e.config.ref_table
 					and e.config.ref_table.config
 					and e.config.ref_table.config.center
 					and e.config.ref_table.config.center.set == "Joker"

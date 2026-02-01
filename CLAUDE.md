@@ -66,5 +66,41 @@ When reviewing or writing code, check for these patterns:
 3. **Array bounds** - Check `i >= 1 and i <= #arr` before accessing `arr[i]`
 4. **Chained methods on arrays** - Check element exists before calling methods
 5. **Colour access before initialization** - Pre-initialize colours to `{ 0, 0, 0, 0 }`
+6. **Hook function parameters** - Always check `e and e.config` before accessing nested properties in UI hooks
 
 See `BUGFIXES.md` for detailed examples and safe coding patterns.
+
+## Code Review Checklist
+
+### Deck Definitions
+
+When adding new decks, verify:
+
+- [ ] **Dependencies are minimal** - Only include dependencies that are strictly required for the deck to function. If a feature is optional (e.g., exotic jokers), use runtime checks (`Cryptid.enabled()`) instead of hard dependencies.
+- [ ] **Atlas position exists** - Run `scripts/fill-atlas-placeholders.sh` if using a new position
+- [ ] **Hooks check all parameters** - UI hooks like `can_buy(e)` must check `e and e.config` before accessing nested properties
+- [ ] **Localization matches behavior** - Description should accurately reflect what the deck does
+
+### Lovely Patches
+
+When adding Lovely patches:
+
+- [ ] **Nil-safe game state access** - Check globals like `G.GAME`, `G.shop_jokers` exist before use
+- [ ] **Runtime feature checks** - Use `Cryptid.enabled('set_name')` for optional features
+- [ ] **Seed uniqueness** - Include ante/round/slot in `pseudorandom()` seeds to avoid repeated results
+
+### Shell Scripts
+
+When adding shell scripts:
+
+- [ ] **Quote all variables** - Use `"$var"` not `$var` to handle paths with spaces
+- [ ] **Safe file operations** - Write to temp file first, then move for in-place updates
+- [ ] **Error handling** - Use `set -e` at the top
+
+## False Positives (Do Not Flag)
+
+These patterns may look like issues but are intentional:
+
+1. **`G.GAME.round_resets.ante` without nil check in Lovely patches** - When the patch runs (during shop setup), the game state is guaranteed to exist. This matches existing patterns in `spooky.toml`, `stake.toml`, etc.
+
+2. **Global hook registration in `init` function** - Hooks like `can_buy` are registered globally when the mod loads, not per-run. This is correct because the hooks check for the deck modifier (`G.GAME.modifiers.cry_*`) before acting.
