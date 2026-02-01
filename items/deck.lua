@@ -1181,6 +1181,45 @@ local antimatter = {
 	end,
 }
 
+local recycling_fee = {
+	object_type = "Back",
+	dependencies = {
+		items = {
+			"set_cry_deck",
+		},
+	},
+	name = "cry-Recycling Fee",
+	key = "recycling_fee",
+	config = { discards = 1 },
+	pos = { x = 5, y = 6 },
+	order = 17,
+	atlas = "atlasdeck",
+	apply = function(self)
+		G.GAME.modifiers.cry_recycling_fee = true
+	end,
+	init = function(self)
+		-- Hook Card:set_cost to modify sell_cost for recycling fee
+		local original_set_cost = Card.set_cost
+		function Card:set_cost()
+			original_set_cost(self)
+
+			-- Apply recycling fee if deck modifier is active
+			if G.GAME and G.GAME.modifiers and G.GAME.modifiers.cry_recycling_fee then
+				-- Check if it's an Egg joker (exempt from fee)
+				local is_egg = self.config and self.config.center and
+					(self.config.center.key == "j_egg" or self.config.center.key == "j_cry_megg")
+
+				if not is_egg then
+					-- Set sell cost to -2 (costs $2 to sell)
+					self.sell_cost = -2
+					self.sell_cost_label = self.facing == "back" and "?" or "-$2"
+				end
+			end
+		end
+	end,
+	unlocked = true,
+}
+
 --[[
 Customize your Antimatter Deck here for the TRUE Sandbox experience!
 How to use Custom Antimatter Deck:
@@ -1221,6 +1260,7 @@ return {
 		beige,
 		blank,
 		antimatter,
+		recycling_fee,
 		e_deck,
 		et_deck,
 		sk_deck,
