@@ -1215,6 +1215,61 @@ local antimatter = {
 	end,
 }
 
+local recycling_fee = {
+	object_type = "Back",
+	dependencies = {
+		items = {
+			"set_cry_deck",
+		},
+	},
+	name = "cry-Recycling Fee",
+	key = "recycling_fee",
+	config = { discards = 1 },
+	pos = { x = 5, y = 6 },
+	order = 17,
+	atlas = "atlasdeck",
+	apply = function(self)
+		G.GAME.modifiers.cry_recycling_fee = true
+	end,
+	init = function(self)
+		-- Hook Card:set_cost to modify sell_cost for recycling fee
+		local original_set_cost = Card.set_cost
+		function Card:set_cost()
+			original_set_cost(self)
+
+			-- Apply recycling fee if deck modifier is active
+			if G.GAME and G.GAME.modifiers and G.GAME.modifiers.cry_recycling_fee then
+				-- Skip if Ember Stake is active (no sell value mechanic takes precedence)
+				if G.GAME.modifiers.cry_no_sell_value then
+					return
+				end
+
+				-- Skip if Rotten Egg mechanic is controlling sell costs
+				if G.GAME.cry_rotten_amount then
+					return
+				end
+
+				-- Check if it's an Egg joker (exempt from fee)
+				local is_egg = self.config and self.config.center and
+					(self.config.center.key == "j_egg" or self.config.center.key == "j_cry_megg")
+
+				-- Check if it's a cursed joker (already unsellable, don't override their sell_cost = 0)
+				-- Note: Monopoly Money is a sellable cursed joker, but it already halves your
+				-- money when sold, so adding the $2 fee would be too punishing. Keep it exempt.
+				local is_cursed = self.config and self.config.center and
+					self.config.center.rarity == "cry_cursed"
+
+				if not is_egg and not is_cursed then
+					-- Set sell cost to -2 (costs $2 to sell)
+					self.sell_cost = -2
+					self.sell_cost_label = self.facing == "back" and "?" or "-$2"
+				end
+			end
+		end
+	end,
+	unlocked = true,
+}
+
 local is_this_a_joke = {
 	object_type = "Back",
 	dependencies = {
@@ -1320,6 +1375,7 @@ return {
 		blank,
 		yoloecon,
 		antimatter,
+		recycling_fee,
 		is_this_a_joke,
 		e_deck,
 		et_deck,
