@@ -11,5 +11,5 @@ return {
 	["force_tooltips"] = true, -- i don't actually know what this does
 	["HTTPS"] = true, -- your internet connection
 	["menu"] = true, -- i don't know what this does either
-	["controller_shoulders"] = true, -- controller shoulder buttons for card selection/flipping
+	["controller_buttons"] = true, -- controller buttons (Y/L3/R3) for card selection/flipping
 }

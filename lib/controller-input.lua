@@ -7,6 +7,10 @@
 --- - Left Stick Press (L3): Select all cards in hand
 ---
 --- Design Notes:
+--- - This file is auto-loaded by Cryptid.lua via NFS.getDirectoryItems("lib/")
+---   No explicit require() is needed - all files in lib/ are loaded automatically.
+--- - The config key "controller_buttons" must match in: config.lua, Cryptid.lua, and here.
+---   See scripts/test-bug-fixes.ts for regression tests that verify this consistency.
 --- - The spelling "consumeables" matches the game's variable naming (G.consumeables)
 
 --- Check if the controller buttons feature is enabled in config.

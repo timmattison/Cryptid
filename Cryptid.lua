@@ -318,10 +318,10 @@ local cryptidConfigTab = function()
 		ref_value = "menu",
 	})
 	cry_nodes[#cry_nodes + 1] = create_toggle({
-		label = localize("cry_controller_shoulders"),
+		label = localize("cry_controller_buttons"),
 		active_colour = HEX("4a90d9"),
 		ref_table = Cryptid_config,
-		ref_value = "controller_shoulders",
+		ref_value = "controller_buttons",
 	})
 	cry_nodes[#cry_nodes + 1] = UIBox_button({
 		colour = G.C.CRY_ALTGREENGRADIENT,

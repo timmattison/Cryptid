@@ -5187,7 +5187,7 @@ return {
 			cry_force_tooltips = "Force Tooltips",
 			cry_family = "Family Friendly Mode",
 			cry_experimental = "Experimental Mode",
-			cry_controller_shoulders = "Controller Shoulder Buttons",
+			cry_controller_buttons = "Controller Buttons (Y/L3/R3)",
 
 			k_cry_program_pack = "Program Pack",
 			k_cry_meme_pack = "Meme Pack",

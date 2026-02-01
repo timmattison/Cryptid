@@ -322,6 +322,37 @@ test("Recycling Fee deck exempts Egg jokers", () => {
 });
 
 // ============================================================================
+// lib/controller-input.lua - Config key consistency tests
+// ============================================================================
+
+const controllerInputContent = readFile("lib/controller-input.lua");
+const configContent = readFile("config.lua");
+const cryptidMainContent = readFile("Cryptid.lua");
+const localizationContent = readFile("localization/en-us.lua");
+
+test("controller-input.lua config key matches config.lua", () => {
+	// The config key used in controller-input.lua should exist in config.lua
+	// controller-input.lua uses: Cryptid_config.controller_buttons
+	const usesControllerButtons = controllerInputContent.includes("Cryptid_config.controller_buttons");
+	const configHasControllerButtons = configContent.includes('["controller_buttons"]');
+	return usesControllerButtons && configHasControllerButtons;
+});
+
+test("Cryptid.lua UI toggle uses same config key as controller-input.lua", () => {
+	// The ref_value in Cryptid.lua should match what controller-input.lua checks
+	const cryptidRefValue = cryptidMainContent.includes('ref_value = "controller_buttons"');
+	const controllerInputKey = controllerInputContent.includes("Cryptid_config.controller_buttons");
+	return cryptidRefValue && controllerInputKey;
+});
+
+test("Cryptid.lua localize key matches localization file", () => {
+	// The localize() call in Cryptid.lua should have a matching key in en-us.lua
+	const cryptidLocalizeKey = cryptidMainContent.includes('localize("cry_controller_buttons")');
+	const localizationHasKey = localizationContent.includes("cry_controller_buttons");
+	return cryptidLocalizeKey && localizationHasKey;
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 
