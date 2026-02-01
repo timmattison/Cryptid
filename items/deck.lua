@@ -1220,6 +1220,8 @@ local recycling_fee = {
 					(self.config.center.key == "j_egg" or self.config.center.key == "j_cry_megg")
 
 				-- Check if it's a cursed joker (already unsellable, don't override their sell_cost = 0)
+				-- Note: Monopoly Money is a sellable cursed joker, but it already halves your
+				-- money when sold, so adding the $2 fee would be too punishing. Keep it exempt.
 				local is_cursed = self.config and self.config.center and
 					self.config.center.rarity == "cry_cursed"
 
