@@ -1205,11 +1205,25 @@ local recycling_fee = {
 
 			-- Apply recycling fee if deck modifier is active
 			if G.GAME and G.GAME.modifiers and G.GAME.modifiers.cry_recycling_fee then
+				-- Skip if Ember Stake is active (no sell value mechanic takes precedence)
+				if G.GAME.modifiers.cry_no_sell_value then
+					return
+				end
+
+				-- Skip if Rotten Egg mechanic is controlling sell costs
+				if G.GAME.cry_rotten_amount then
+					return
+				end
+
 				-- Check if it's an Egg joker (exempt from fee)
 				local is_egg = self.config and self.config.center and
 					(self.config.center.key == "j_egg" or self.config.center.key == "j_cry_megg")
 
-				if not is_egg then
+				-- Check if it's a cursed joker (already unsellable, don't override their sell_cost = 0)
+				local is_cursed = self.config and self.config.center and
+					self.config.center.rarity == "cry_cursed"
+
+				if not is_egg and not is_cursed then
 					-- Set sell cost to -2 (costs $2 to sell)
 					self.sell_cost = -2
 					self.sell_cost_label = self.facing == "back" and "?" or "-$2"
