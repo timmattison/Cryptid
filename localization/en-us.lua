@@ -209,6 +209,15 @@ return {
 					"{C:attention}Voucher",
 				},
 			},
+			b_cry_recycling_fee = {
+				name = "Recycling Fee Deck",
+				text = {
+					"{C:red}+1{} discard",
+					"every round",
+					"Selling cards costs {C:money}$2{}",
+					"{C:attention}Eggs{} and {C:attention}Monopoly{} are exempt",
+				},
+			},
 			b_cry_sk_deck = {
 				name = "Sticker Deck",
 				text = {
