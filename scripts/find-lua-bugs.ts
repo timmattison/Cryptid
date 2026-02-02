@@ -695,6 +695,42 @@ function checkCommonTypos(content: string, file: string): void {
 }
 
 /**
+ * Check for G.GAME.dollars comparisons without to_big() wrapper
+ * G.GAME.dollars can be a big number table, so direct comparisons will fail
+ */
+function checkDollarsComparison(content: string, file: string): void {
+	const lines = content.split("\n");
+
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		const lineNum = i + 1;
+
+		// Skip comments
+		if (line.trim().startsWith("--")) continue;
+
+		// Pattern: G.GAME.dollars compared with < > <= >= without to_big()
+		// Match: G.GAME.dollars < something OR something < G.GAME.dollars
+		// But NOT: to_big(G.GAME.dollars)
+		if (line.includes("G.GAME.dollars") && /[<>]=?/.test(line)) {
+			// Check if it's wrapped in to_big()
+			if (!line.includes("to_big(G.GAME.dollars)")) {
+				// Make sure it's actually a comparison, not just assignment
+				const comparisonMatch = line.match(/G\.GAME\.dollars\s*[<>]=?\s*\w|(\w+)\s*[<>]=?\s*G\.GAME\.dollars/);
+				if (comparisonMatch) {
+					bugs.push({
+						file,
+						line: lineNum,
+						pattern: "dollars-comparison-no-to-big",
+						code: `G.GAME.dollars comparison without to_big() - will crash with big numbers: ${line.trim().substring(0, 80)}`,
+						severity: "error",
+					});
+				}
+			}
+		}
+	}
+}
+
+/**
  * Check for accessing card.base.* without nil check on base
  */
 function checkCardBaseAccess(content: string, file: string): void {
@@ -767,6 +803,7 @@ for (const file of luaFiles) {
 	checkGlobalAssignments(content, relPath);
 	checkCommonTypos(content, relPath);
 	checkCardBaseAccess(content, relPath);
+	checkDollarsComparison(content, relPath);
 }
 
 // Sort bugs by severity

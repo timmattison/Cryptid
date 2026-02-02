@@ -4,8 +4,8 @@ This document describes the nil-access crash fixes, the test suite, and common p
 
 ## Summary
 
-- **23 bugs fixed** across 11 files
-- **96 tests written** (72 Lua + 24 TypeScript)
+- **24 bugs fixed** across 11 files
+- **97 tests written** (72 Lua + 25 TypeScript)
 - **2630 potential issues identified** by static analysis
 
 ## Bugs Fixed
@@ -21,7 +21,7 @@ Colours like `G.C.CRY_EXOTIC` were only populated in `Game:update()` but could b
 | `G.C.CRY_TAX_MULT` | Pre-initialized to `{ 0, 0, 0, 0 }` |
 | `G.C.CRY_TAX_CHIPS` | Pre-initialized to `{ 0, 0, 0, 0 }` |
 
-### lib/ui.lua - Variable Typo and Nil Checks (4 fixes)
+### lib/ui.lua - Variable Typo and Nil Checks (5 fixes)
 
 | Bug | Fix |
 |-----|-----|
@@ -29,6 +29,9 @@ Colours like `G.C.CRY_EXOTIC` were only populated in `Game:update()` but could b
 | `G.shared_seals` nil access | Added `and G.shared_seals` before accessing |
 | `G.shared_stickers` nil access | Added `and G.shared_stickers` before accessing |
 | `table.remove` on nil | Added checks for `abc.nodes` and `abc.nodes[1]` |
+| Recycling Fee big number comparison | Wrapped `G.GAME.dollars` comparison with `to_big()` for big number safety |
+
+The Recycling Fee deck's sell button check compared `G.GAME.dollars < math.abs(card.sell_cost)` directly, but `G.GAME.dollars` can be a big number table (not a plain number) when using the big numbers feature. This caused "attempt to compare table with number" crash.
 
 ### items/code.lua - Nil Access in Consumables (4 fixes)
 
@@ -237,3 +240,17 @@ function my_consumable:use(card, area, copier)
     -- Rest of function can safely use cards[1]
 end
 ```
+
+### Wrap G.GAME.dollars comparisons in to_big()
+
+`G.GAME.dollars` can be a big number table (not a plain Lua number) when using the big numbers feature. Direct comparisons will crash with "attempt to compare table with number".
+
+```lua
+-- BAD: Will crash if G.GAME.dollars is a big number table
+if G.GAME.dollars < cost then
+
+-- GOOD: Use to_big() to handle both regular numbers and big numbers
+if to_big(G.GAME.dollars) < to_big(cost) then
+```
+
+The static analysis tool (`find-lua-bugs.ts`) now detects this pattern with the `dollars-comparison-no-to-big` check.
