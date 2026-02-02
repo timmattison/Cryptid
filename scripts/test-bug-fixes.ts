@@ -291,6 +291,20 @@ test("YOLOEcon Joker pricing documents intentional behavior for special rarities
 });
 
 // ============================================================================
+// lib/ui.lua - Recycling Fee big number comparison fix
+// ============================================================================
+
+test("Recycling Fee dollars comparison uses to_big() for big number safety", () => {
+	// G.GAME.dollars can be a big number table, so comparison must use to_big()
+	// Should have: to_big(G.GAME.dollars) < to_big(math.abs(card.sell_cost))
+	// NOT: G.GAME.dollars < math.abs(card.sell_cost)
+	return (
+		uiContent.includes("to_big(G.GAME.dollars) < to_big(math.abs(card.sell_cost))") &&
+		!uiContent.includes("and G.GAME.dollars < math.abs(card.sell_cost)")
+	);
+});
+
+// ============================================================================
 // items/deck.lua - Recycling Fee Deck mechanic interaction tests
 // ============================================================================
 
