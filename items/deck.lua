@@ -1225,9 +1225,9 @@ local recycling_fee = {
 	name = "cry-Recycling Fee",
 	key = "recycling_fee",
 	config = { discards = 1 },
-	pos = { x = 5, y = 6 },
+	pos = { x = 0, y = 0 },
 	order = 17,
-	atlas = "atlasdeck",
+	atlas = "recycling_fee",
 	apply = function(self)
 		G.GAME.modifiers.cry_recycling_fee = true
 	end,
@@ -1283,8 +1283,8 @@ local is_this_a_joke = {
 	key = "is_this_a_joke",
 	order = 16,
 	config = { vouchers = { "v_hone" } },
-	pos = { x = 4, y = 6 },
-	atlas = "atlasdeck",
+	pos = { x = 0, y = 0 },
+	atlas = "is_this_a_joke",
 	apply = function(self)
 		G.GAME.modifiers.cry_is_this_a_joke = true
 	end,

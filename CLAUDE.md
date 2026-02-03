@@ -68,3 +68,42 @@ When reviewing or writing code, check for these patterns:
 5. **Colour access before initialization** - Pre-initialize colours to `{ 0, 0, 0, 0 }`
 
 See `BUGFIXES.md` for detailed examples and safe coding patterns.
+
+## Adding Custom Deck Assets
+
+When adding a custom image as a deck's visual asset:
+
+### File Structure
+
+- Deck assets go in `assets/1x/` (71x95 pixels) and `assets/2x/` (142x190 pixels)
+- Naming convention: `b_cry_<deck_key>.png` (e.g., `b_cry_recycling_fee.png`)
+
+### Steps
+
+1. **Resize the source image** to deck dimensions:
+   ```bash
+   magick source.png -resize 71x95! assets/1x/b_cry_<deck_key>.png
+   magick source.png -resize 142x190! assets/2x/b_cry_<deck_key>.png
+   ```
+
+2. **Add atlas definition** in `lib/content.lua` (after other deck atlases around line 727):
+   ```lua
+   SMODS.Atlas({
+       key = "<deck_key>",
+       path = "b_cry_<deck_key>.png",
+       px = 71,
+       py = 95,
+   })
+   ```
+
+3. **Update the deck definition** in `items/deck.lua`:
+   ```lua
+   atlas = "<deck_key>",  -- was "atlasdeck"
+   pos = { x = 0, y = 0 },  -- single-sprite atlas uses (0,0)
+   ```
+
+4. **Delete the source image** after creating the assets
+
+### Why pos = {x = 0, y = 0}?
+
+Individual deck atlases contain only one 71x95 sprite, so the position is always (0, 0). The shared `atlasdeck` atlas contains multiple decks in a grid, which is why decks using it have positions like `{x = 4, y = 6}`.

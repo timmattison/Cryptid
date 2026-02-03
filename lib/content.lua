@@ -731,6 +731,18 @@ SMODS.Atlas({
 	py = 95,
 })
 SMODS.Atlas({
+	key = "is_this_a_joke",
+	path = "b_cry_is_this_a_joke.png",
+	px = 71,
+	py = 95,
+})
+SMODS.Atlas({
+	key = "recycling_fee",
+	path = "b_cry_recycling_fee.png",
+	px = 71,
+	py = 95,
+})
+SMODS.Atlas({
 	key = "effarcire",
 	path = "goofy.png",
 	px = 71,
