@@ -855,8 +855,12 @@ local oversat = {
 	end,
 	init = function(self)
 		AurinkoAddons.cry_oversat = function(card, hand, instant, amount)
-			G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].chips + (G.GAME.hands[hand].l_chips * amount), 0)
-			G.GAME.hands[hand].mult = math.max(G.GAME.hands[hand].mult + (G.GAME.hands[hand].l_mult * amount), 1)
+			-- Note: cry_oversat intentionally clamps chips to 0 (not 1) to allow zeroing out hands
+			-- Other functions (cry_glitched, cry_noisy, level_up_hand) clamp to 1
+			local new_chips = to_big(G.GAME.hands[hand].chips) + to_big(G.GAME.hands[hand].l_chips) * amount
+			G.GAME.hands[hand].chips = new_chips < to_big(0) and to_big(0) or new_chips
+			local new_mult = to_big(G.GAME.hands[hand].mult) + to_big(G.GAME.hands[hand].l_mult) * amount
+			G.GAME.hands[hand].mult = new_mult < to_big(1) and to_big(1) or new_mult
 			if not instant then
 				G.E_MANAGER:add_event(Event({
 					trigger = "after",
@@ -1080,8 +1084,10 @@ local glitched = {
 					(G.GAME.modifiers.cry_misprint_max or 1) * 10
 				)
 				* amount
-			G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].chips + modc, 1)
-			G.GAME.hands[hand].mult = math.max(G.GAME.hands[hand].mult + modm, 1)
+			local new_chips = to_big(G.GAME.hands[hand].chips) + to_big(modc)
+			G.GAME.hands[hand].chips = new_chips < to_big(1) and to_big(1) or new_chips
+			local new_mult = to_big(G.GAME.hands[hand].mult) + to_big(modm)
+			G.GAME.hands[hand].mult = new_mult < to_big(1) and to_big(1) or new_mult
 			if not instant then
 				for i = 1, math.random(2, 4) do
 					update_hand_text(
@@ -1590,8 +1596,10 @@ local noisy = {
 		AurinkoAddons.cry_noisy = function(card, hand, instant, amount)
 			local modc = pseudorandom("cry_noisy_chips_aurinko", noisy_stats.min.chips, noisy_stats.max.chips) * amount
 			local modm = pseudorandom("cry_noisy_mult_aurinko", noisy_stats.min.mult, noisy_stats.max.mult) * amount
-			G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].chips + modc, 1)
-			G.GAME.hands[hand].mult = math.max(G.GAME.hands[hand].mult + modm, 1)
+			local new_chips = to_big(G.GAME.hands[hand].chips) + to_big(modc)
+			G.GAME.hands[hand].chips = new_chips < to_big(1) and to_big(1) or new_chips
+			local new_mult = to_big(G.GAME.hands[hand].mult) + to_big(modm)
+			G.GAME.hands[hand].mult = new_mult < to_big(1) and to_big(1) or new_mult
 			if not instant then
 				for i = 1, math.random(2, 4) do
 					update_hand_text(

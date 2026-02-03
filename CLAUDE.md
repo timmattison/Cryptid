@@ -66,8 +66,41 @@ When reviewing or writing code, check for these patterns:
 3. **Array bounds** - Check `i >= 1 and i <= #arr` before accessing `arr[i]`
 4. **Chained methods on arrays** - Check element exists before calling methods
 5. **Colour access before initialization** - Pre-initialize colours to `{ 0, 0, 0, 0 }`
+6. **BigNum overflow** - Use `to_big()` for large number arithmetic (see below)
 
 See `BUGFIXES.md` for detailed examples and safe coding patterns.
+
+## BigNum Patterns for Hand Chips/Mult
+
+When modifying `G.GAME.hands[hand].chips` or `G.GAME.hands[hand].mult`, always use BigNum (Talisman library) to prevent overflow at extreme values.
+
+### Why BigNum is Required
+
+Lua uses IEEE 754 64-bit doubles (max ~1.8e308). When leveling up hands to extreme levels, chips can overflow to infinity and wrap to negative values. BigNum handles arbitrarily large numbers safely.
+
+### Safe Pattern
+
+```lua
+-- CORRECT: Use to_big() for arithmetic and conditional clamping
+local new_chips = to_big(G.GAME.hands[hand].chips) + to_big(G.GAME.hands[hand].l_chips) * amount
+G.GAME.hands[hand].chips = new_chips < to_big(1) and to_big(1) or new_chips
+```
+
+### Unsafe Patterns (DO NOT USE)
+
+```lua
+-- WRONG: math.max doesn't work with BigNum tables
+G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].chips + modc, 1)
+
+-- WRONG: Plain arithmetic without to_big() can overflow
+G.GAME.hands[hand].chips = G.GAME.hands[hand].chips + G.GAME.hands[hand].l_chips * amount
+```
+
+### Key Points
+
+- `math.max()` does NOT work with BigNum tables - use `x < to_big(n) and to_big(n) or x` instead
+- Wrap ALL operands in `to_big()` before arithmetic
+- Standard minimum is 1 for chips/mult, but `cry_oversat` uses 0 for chips (intentional)
 
 ## Adding Custom Deck Assets
 

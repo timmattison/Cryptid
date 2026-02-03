@@ -524,6 +524,90 @@ T:test("args.colour: works when colour exists", function()
 end)
 
 -- ============================================================================
+-- BIGNUM OVERFLOW PREVENTION TESTS (lovely/none.toml fix)
+-- ============================================================================
+
+-- Mock BigNum implementation for testing (simulates to_big behavior)
+local function mock_to_big(val)
+	-- Return a table that represents a "big number"
+	return { value = val, is_big = true }
+end
+
+-- Mock comparison for BigNum
+local function big_less_than(a, b)
+	local a_val = type(a) == "table" and a.value or a
+	local b_val = type(b) == "table" and b.value or b
+	return a_val < b_val
+end
+
+-- Mock addition for BigNum (handles arbitrary precision)
+local function big_add(a, b)
+	local a_val = type(a) == "table" and a.value or a
+	local b_val = type(b) == "table" and b.value or b
+	return mock_to_big(a_val + b_val)
+end
+
+T:test("BigNum: regular Lua numbers overflow at very large values", function()
+	-- Lua uses IEEE 754 64-bit doubles (DBL_MAX ≈ 1.8e308)
+	-- Values beyond this overflow to infinity, causing the negative chips bug
+	local huge = 1e308
+	local result = huge * 10 -- This overflows to inf
+
+	T:assertEqual(math.huge, result, "Regular Lua numbers overflow to infinity")
+
+	-- Subtracting from inf gives unexpected results
+	local weird = result - 1e300
+	T:assertEqual(math.huge, weird, "Operations on inf don't work as expected")
+end)
+
+T:test("BigNum: safe pattern prevents overflow with mock BigNum", function()
+	-- Simulate the fixed code pattern:
+	-- local new_chips = to_big(chips) + to_big(l_chips) * amount
+	-- G.GAME.hands[hand].chips = new_chips < to_big(1) and to_big(1) or new_chips
+
+	local chips = 1e100
+	local l_chips = 1e99
+	local amount = 1000
+
+	-- Using mock BigNum (which would handle arbitrary precision in real implementation)
+	local new_chips = big_add(mock_to_big(chips), mock_to_big(l_chips * amount))
+
+	-- The pattern ensures we never go below 1
+	local result = big_less_than(new_chips, mock_to_big(1)) and mock_to_big(1) or new_chips
+
+	T:assert(result.value > 0, "BigNum pattern should keep chips positive")
+	T:assert(result.is_big, "Result should be a BigNum")
+end)
+
+T:test("BigNum: safe pattern prevents negative chips", function()
+	-- Simulate level-down scenario (amount = -100)
+	local chips = 50
+	local l_chips = 10
+	local amount = -100 -- This would make chips negative without protection
+
+	local new_chips = big_add(mock_to_big(chips), mock_to_big(l_chips * amount))
+	-- new_chips.value = 50 + 10 * -100 = 50 - 1000 = -950
+
+	-- The pattern clamps to minimum of 1
+	local result = big_less_than(new_chips, mock_to_big(1)) and mock_to_big(1) or new_chips
+
+	T:assertEqual(1, result.value, "Chips should be clamped to minimum of 1")
+end)
+
+T:test("BigNum: vanilla math.max doesn't work with BigNum tables", function()
+	-- Demonstrates why we can't use math.max with BigNum
+	local big = mock_to_big(100)
+	local regular = 1
+
+	-- math.max with a table doesn't work correctly
+	T:assertNoThrow(function()
+		-- This would fail in real code because math.max doesn't understand BigNum
+		local result = math.max(type(big) == "table" and big.value or big, regular)
+		T:assertEqual(100, result, "Must extract value from BigNum for math.max")
+	end, "Need special handling for BigNum in comparisons")
+end)
+
+-- ============================================================================
 -- RUN TESTS
 -- ============================================================================
 

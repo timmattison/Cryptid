@@ -216,8 +216,10 @@ G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].chips + G.GAME.hands[hand
 position = "at"
 payload = '''
 G.GAME.hands[hand].level = math.max(0, G.GAME.hands[hand].level + amount)
-G.GAME.hands[hand].mult = G.GAME.hands[hand].mult + G.GAME.hands[hand].l_mult*amount
-G.GAME.hands[hand].chips = G.GAME.hands[hand].chips + G.GAME.hands[hand].l_chips*amount
+local new_mult = to_big(G.GAME.hands[hand].mult) + to_big(G.GAME.hands[hand].l_mult)*amount
+G.GAME.hands[hand].mult = new_mult < to_big(1) and to_big(1) or new_mult
+local new_chips = to_big(G.GAME.hands[hand].chips) + to_big(G.GAME.hands[hand].l_chips)*amount
+G.GAME.hands[hand].chips = new_chips < to_big(1) and to_big(1) or new_chips
 '''
 match_indent = true
 
