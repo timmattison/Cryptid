@@ -367,6 +367,81 @@ test("Cryptid.lua localize key matches localization file", () => {
 });
 
 // ============================================================================
+// lovely/none.toml - BigNum overflow prevention tests
+// ============================================================================
+
+const noneTomlContent = readFile("lovely/none.toml");
+
+test("none.toml level_up_hand patch uses to_big for chips", () => {
+	// The payload should use to_big() to prevent overflow
+	return noneTomlContent.includes("to_big(G.GAME.hands[hand].chips)");
+});
+
+test("none.toml level_up_hand patch uses to_big for mult", () => {
+	// The payload should use to_big() for mult as well
+	return noneTomlContent.includes("to_big(G.GAME.hands[hand].mult)");
+});
+
+test("none.toml level_up_hand patch uses to_big for l_chips", () => {
+	// The per-level increment should also use to_big()
+	return noneTomlContent.includes("to_big(G.GAME.hands[hand].l_chips)");
+});
+
+test("none.toml level_up_hand patch clamps chips to minimum", () => {
+	// The pattern should clamp chips to prevent negative values
+	// Pattern: new_chips < to_big(1) and to_big(1) or new_chips
+	return noneTomlContent.includes("new_chips < to_big(1)");
+});
+
+test("none.toml payload does NOT use vulnerable pattern (chips without to_big)", () => {
+	// The OLD vulnerable pattern was:
+	// G.GAME.hands[hand].chips = G.GAME.hands[hand].chips + G.GAME.hands[hand].l_chips*amount
+	// This should NOT be in the payload section (only in the pattern section we're replacing)
+
+	// Extract the payload section for level_up_hand (matches payload containing G.GAME.hands[hand].level)
+	const payloadMatch = noneTomlContent.match(/payload = '''[\s\S]*?G\.GAME\.hands\[hand\]\.level[\s\S]*?'''/);
+	if (!payloadMatch) {
+		console.error("  ERROR: Could not find level_up_hand payload in none.toml - TOML structure may have changed");
+		return false;
+	}
+
+	const payload = payloadMatch[0];
+	// The vulnerable pattern should NOT appear in the payload
+	const vulnerablePattern = /G\.GAME\.hands\[hand\]\.chips\s*=\s*G\.GAME\.hands\[hand\]\.chips\s*\+\s*G\.GAME\.hands\[hand\]\.l_chips\s*\*\s*amount/;
+	return !vulnerablePattern.test(payload);
+});
+
+// ============================================================================
+// items/misc.lua - BigNum overflow prevention tests
+// ============================================================================
+
+const miscContent = readFile("items/misc.lua");
+
+test("misc.lua cry_oversat uses to_big for chip arithmetic", () => {
+	// Should use: to_big(G.GAME.hands[hand].chips) + to_big(...)
+	return miscContent.includes("to_big(G.GAME.hands[hand].chips) + to_big(G.GAME.hands[hand].l_chips)");
+});
+
+test("misc.lua cry_glitched uses to_big for chip arithmetic", () => {
+	// Should use: to_big(G.GAME.hands[hand].chips) + to_big(modc)
+	return miscContent.includes("to_big(G.GAME.hands[hand].chips) + to_big(modc)");
+});
+
+test("misc.lua cry_noisy uses to_big for chip arithmetic", () => {
+	// cry_noisy function should also use to_big pattern
+	// Count occurrences - we should have 2 instances of this pattern (glitched and noisy)
+	const pattern = /to_big\(G\.GAME\.hands\[hand\]\.chips\) \+ to_big\(modc\)/g;
+	return countOccurrences(miscContent, pattern) >= 2;
+});
+
+test("misc.lua does NOT use vulnerable math.max pattern for hand chips", () => {
+	// The old vulnerable pattern was:
+	// G.GAME.hands[hand].chips = math.max(G.GAME.hands[hand].chips + modc, 1)
+	const vulnerablePattern = /G\.GAME\.hands\[hand\]\.chips\s*=\s*math\.max\s*\(\s*G\.GAME\.hands\[hand\]\.chips\s*\+\s*modc/;
+	return !vulnerablePattern.test(miscContent);
+});
+
+// ============================================================================
 // Summary
 // ============================================================================
 

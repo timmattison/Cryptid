@@ -4,8 +4,8 @@ This document describes the nil-access crash fixes, the test suite, and common p
 
 ## Summary
 
-- **24 bugs fixed** across 11 files
-- **97 tests written** (72 Lua + 25 TypeScript)
+- **25 bugs fixed** across 12 files
+- **121 tests written** (76 Lua + 45 TypeScript)
 - **2630 potential issues identified** by static analysis
 
 ## Bugs Fixed
@@ -107,6 +107,34 @@ The `Cryptid.get_random_hand` function had a `while true` loop with no escape co
 
 The `create_card` override for Ace Aequilibrium had a while loop that searched for a viable joker. If all jokers were locked, excluded, or exotic, the loop would run forever. Added max_tries counter that limits iterations to the number of jokers in the pool.
 
+### lovely/none.toml + items/misc.lua - BigNum Overflow Prevention (1 fix, 4 locations)
+
+| Bug | Fix |
+|-----|-----|
+| Hand chips overflow to negative at extreme values | Wrapped arithmetic in `to_big()` and added clamping |
+
+When leveling up poker hands to extremely high levels (e.g., Flush level 65+), the base chips value could overflow Lua's 64-bit floating point representation (~1.8e308 max), wrapping around to negative infinity. This caused the game to display negative base chips.
+
+**Affected locations:**
+- `lovely/none.toml`: `level_up_hand` patch for `functions/common_events.lua`
+- `items/misc.lua`: `cry_oversat`, `cry_glitched`, and `cry_noisy` Aurinko addon functions
+
+**The vulnerable pattern was:**
+```lua
+G.GAME.hands[hand].chips = G.GAME.hands[hand].chips + G.GAME.hands[hand].l_chips*amount
+```
+
+**The safe pattern uses BigNum:**
+```lua
+local new_chips = to_big(G.GAME.hands[hand].chips) + to_big(G.GAME.hands[hand].l_chips)*amount
+G.GAME.hands[hand].chips = new_chips < to_big(1) and to_big(1) or new_chips
+```
+
+This ensures:
+1. All arithmetic uses BigNum (Talisman library) which handles arbitrarily large numbers
+2. Values are clamped to a minimum of 1 to prevent negative chips
+3. The pattern `x < to_big(n) and to_big(n) or x` replaces `math.max()` which doesn't work with BigNum tables
+
 ### lib/forcetrigger.lua - Joker Buffer Bug (1 fix)
 
 | Bug | Fix |
@@ -117,11 +145,11 @@ When Riff Raff was retriggered multiple times (e.g., by multiple Chad jokers wit
 
 ## Test Suite
 
-### Lua Tests (72 tests)
+### Lua Tests (76 tests)
 
 Run with: `cd tests && lua run-all-tests.lua`
 
-#### test-nil-safety.lua (35 tests)
+#### test-nil-safety.lua (39 tests)
 Tests verifying the specific bug fixes work correctly:
 - Colour pre-initialization tests
 - G.shared_seals/G.shared_stickers nil check tests
@@ -132,6 +160,7 @@ Tests verifying the specific bug fixes work correctly:
 - caeruleum array bounds check tests
 - center vs _center variable tests
 - percent variable definition tests
+- **BigNum overflow prevention tests** (Lua number overflow, safe patterns, negative clamping)
 
 #### test-common-patterns.lua (37 tests)
 Tests documenting safe vs unsafe patterns:
@@ -148,7 +177,7 @@ Tests documenting safe vs unsafe patterns:
 - Callback array index staleness
 - Missing return in functions
 
-### TypeScript Regression Tests (24 tests)
+### TypeScript Regression Tests (45 tests)
 
 Run with: `npx tsx scripts/test-bug-fixes.ts`
 
@@ -157,6 +186,7 @@ These tests check the code structure to ensure fixes haven't been reverted. They
 - All 4 nil checks exist in lib/ui.lua
 - All 4 fixes exist in items/code.lua
 - Bounds check exists in items/exotic.lua
+- **BigNum overflow prevention** - verifies `to_big()` usage in none.toml and misc.lua, and absence of vulnerable patterns
 
 ## Static Analysis
 
