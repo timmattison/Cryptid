@@ -2,7 +2,6 @@
 --- Adds gamepad button functionality for controller-only play.
 ---
 --- Features:
---- - Y Button: Select/toggle highlight on focused card
 --- - Right Stick Press (R3): Flip double-sided cards
 --- - Left Stick Press (L3): Select all cards in hand
 ---
@@ -53,7 +52,8 @@ local function get_current_highlight_count()
 end
 
 --- Handle controller button input for gamepad controls.
---- Processes Y, L3, and R3 button presses for card selection and flipping.
+--- Processes L3 and R3 button presses for card selection and flipping.
+--- Note: We don't override buttons that already have vanilla functions (like Y for discard).
 --- @param button string The LÖVE gamepad button name
 function Cryptid.handle_controller_button(button)
 	-- Only process if the feature is enabled
@@ -61,9 +61,7 @@ function Cryptid.handle_controller_button(button)
 		return
 	end
 
-	if button == "y" then
-		Cryptid.controller_select_focused()
-	elseif button == "rightstick" then
+	if button == "rightstick" then
 		Cryptid.controller_flip_card()
 	elseif button == "leftstick" then
 		Cryptid.select_all_hand_cards()
@@ -106,67 +104,6 @@ function Cryptid.select_all_hand_cards()
 	-- Only play sound if we actually selected cards
 	if cards_added > 0 then
 		play_sound("cardSlide1", 0.5)
-	end
-end
-
---- Toggle selection on the currently focused card using controller navigation.
---- Works with jokers, hand cards, and consumables.
-function Cryptid.controller_select_focused()
-	-- Get the currently focused element from controller
-	if not G.CONTROLLER or not G.CONTROLLER.cursor_hover then
-		return
-	end
-
-	local target = G.CONTROLLER.cursor_hover.target
-	if not target then
-		return
-	end
-
-	-- Ensure target has an area property
-	if not target.area then
-		return
-	end
-
-	-- Check if target is a card in the jokers area
-	if G.jokers and target.area == G.jokers then
-		-- Toggle highlight on joker
-		if target.highlighted then
-			G.jokers:remove_from_highlighted(target)
-		else
-			G.jokers:add_to_highlighted(target, true)
-		end
-		play_sound("cardSlide1", 0.5)
-		return
-	end
-
-	-- Support selecting hand cards with Y
-	if G.hand and target.area == G.hand then
-		if can_select_hand_cards() then
-			if target.highlighted then
-				-- Deselect if already highlighted
-				G.hand:remove_from_highlighted(target)
-			else
-				-- Check highlight limit before adding
-				local limit = get_hand_highlight_limit()
-				local current_count = get_current_highlight_count()
-				if current_count < limit then
-					G.hand:add_to_highlighted(target, true)
-				end
-			end
-			play_sound("cardSlide1", 0.5)
-		end
-		return
-	end
-
-	-- Support consumables too (note: game uses spelling "consumeables")
-	if G.consumeables and target.area == G.consumeables then
-		if target.highlighted then
-			G.consumeables:remove_from_highlighted(target)
-		else
-			G.consumeables:add_to_highlighted(target, true)
-		end
-		play_sound("cardSlide1", 0.5)
-		return
 	end
 end
 
