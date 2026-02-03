@@ -80,10 +80,10 @@ When adding a custom image as a deck's visual asset:
 
 ### Steps
 
-1. **Resize the source image** to deck dimensions:
+1. **Resize the source image** to deck dimensions (maintain aspect ratio, center on transparent canvas):
    ```bash
-   magick source.png -resize 71x95! assets/1x/b_cry_<deck_key>.png
-   magick source.png -resize 142x190! assets/2x/b_cry_<deck_key>.png
+   magick source.png -resize 71x95 -background none -gravity center -extent 71x95 assets/1x/b_cry_<deck_key>.png
+   magick source.png -resize 142x190 -background none -gravity center -extent 142x190 assets/2x/b_cry_<deck_key>.png
    ```
 
 2. **Add atlas definition** in `lib/content.lua` (after other deck atlases around line 727):
